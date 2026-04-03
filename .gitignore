@@ -1,0 +1,20 @@
+.codex
+.codex/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Editor and OS files
+.DS_Store
+Thumbs.db

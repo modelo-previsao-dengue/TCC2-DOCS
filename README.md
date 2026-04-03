@@ -31,27 +31,23 @@ Existe vasta literatura mostrando que variáveis climáticas (temperatura, preci
 
 ## 📂 Estrutura do Repositório
 
-```
-TCC1/
-├── README.md                 # Este arquivo
-├── docs/                     # Documentação completa do TCC
-│   ├── 01-tema-e-motivacao.md
-│   ├── 02-referencias-bibliograficas.md
-│   ├── 03-bases-de-dados.md
-│   ├── 04-metodologia.md
-│   ├── 05-plano-de-trabalho.md
-│   └── papers/               # Papers e TCCs em PDF
-├── scripts/                  # Scripts para processamento de dados
-│   └── data/                 # Scripts de coleta de dados
-│       ├── download_sinan.py
-│       └── download_climate.py
-├── notebooks/                # Jupyter notebooks para análise
-│   └── prototipo_inicial.ipynb
-├── data/                     # Dados do projeto
-│   ├── raw/                  # Dados brutos (não versionados)
-│   └── processed/            # Dados processados
-├── models/                   # Modelos treinados
-└── agents/                   # Agentes de IA para análise
+```text
+TCC2-DOCS/
+├── README.md
+├── docs/
+│   ├── model-comparison/
+│   │   └── overview.md
+│   └── storage-research/
+│       ├── infrastructure-options.md
+│       └── infrastructure-research.md
+└── notebooks/
+    └── examples/
+        ├── 02_xgboost_model_educativo.ipynb
+        ├── 03_sarima_model_educativo.ipynb
+        ├── RUN_EXAMPLE_MODEL.md
+        ├── RUN_SARIMA_MODEL.md
+        ├── SARIMA_README.md
+        └── XGBOOST_README.md
 ```
 
 ## 🗃️ Fontes de Dados
@@ -116,17 +112,14 @@ TCC1/
 ### Pré-requisitos
 ```bash
 python >= 3.9
-pip install -r requirements.txt
+jupyter lab
 ```
 
 ### Instalação
 ```bash
 # Clone o repositório
-git clone https://github.com/seu-usuario/TCC1.git
-cd TCC1
-
-# Instale as dependências
-pip install -r requirements.txt
+git clone https://github.com/seu-usuario/TCC2-DOCS.git
+cd TCC2-DOCS
 
 # Execute os notebooks
 jupyter lab notebooks/
@@ -134,19 +127,17 @@ jupyter lab notebooks/
 
 ## 📚 Documentação
 
-Toda a documentação detalhada está disponível na pasta [`docs/`](./docs/):
+Toda a documentação detalhada está disponível na pasta [`docs/`](./docs/), organizada por tema:
 
-- [Tema e Motivação](./docs/01-tema-e-motivacao.md)
-- [Referências Bibliográficas](./docs/02-referencias-bibliograficas.md)
-- [Bases de Dados](./docs/03-bases-de-dados.md)
-- [Metodologia](./docs/04-metodologia.md)
-- [Plano de Trabalho](./docs/05-plano-de-trabalho.md)
+- [Storage Research](./docs/storage-research/infrastructure-research.md)
+- [Storage Options](./docs/storage-research/infrastructure-options.md)
+- [Model Comparison](./docs/model-comparison/overview.md)
 
 ## 👨‍💻 Autor
 
 **Pedro Lucas e Thiago**
 - Curso: Engenharia de Software - UnB
-- Trabalho: TCC1 (Trabalho de Conclusão de Curso)
+- Trabalho: TCC (Trabalho de Conclusão de Curso)
 
 ## 📄 Licença
 
@@ -158,5 +149,5 @@ Este é um projeto acadêmico, mas sugestões e feedback são sempre bem-vindos!
 
 ---
 
-⚠️ **Nota**: Os dados brutos não são versionados no repositório devido ao tamanho. Utilize os scripts na pasta `scripts/data/` para fazer o download das fontes oficiais.
+⚠️ **Nota**: Este repositório está organizado principalmente para documentação e notebooks de estudo. Estruturas adicionais de código, dados e modelos podem ser adicionadas depois, conforme o projeto evoluir.
 
