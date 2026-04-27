@@ -1,0 +1,32 @@
+{
+  "scope": {
+    "years": [
+      2022,
+      2023,
+      2024
+    ],
+    "uf": "DF",
+    "municipality_code": "5300108",
+    "municipality_name": "Brasilia"
+  },
+  "analysis_mode": "clinical_profile",
+  "selected_features": [
+    "raca_parda",
+    "cefaleia_flag",
+    "criterio_lab",
+    "nausea_flag",
+    "dor_retro_flag",
+    "leucopenia_flag",
+    "exantema_flag",
+    "febre_flag",
+    "mialgia_flag",
+    "criterio_clinico_epi",
+    "caso_inconclusivo",
+    "caso_confirmado_provavel",
+    "artrite_flag",
+    "criterio_clinico",
+    "dor_costas_flag",
+    "laco_flag",
+    "vomito_flag"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "scope": {
+    "years": [
+      2022,
+      2023,
+      2024
+    ],
+    "uf": "DF",
+    "municipality_code": "5300108",
+    "municipality_name": "Brasilia"
+  },
+  "selected_features": [
+    "NOTIFICACOES",
+    "dor_retro_flag",
+    "febre_flag",
+    "cefaleia_flag",
+    "criterio_clinico_epi",
+    "nausea_flag",
+    "artralgia_flag",
+    "criterio_lab",
+    "caso_dengue_alarme",
+    "laco_flag",
+    "dor_costas_flag",
+    "artrite_flag",
+    "alrm_hepat_flag",
+    "obito_agravo",
+    "grav_melen_flag",
+    "grav_ench_flag",
+    "grav_orgao_flag"
+  ]
+}
