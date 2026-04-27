@@ -1,0 +1,42 @@
+{
+  "sinan_portal_home": {
+    "url": "https://portalsinan.saude.gov.br/",
+    "role": "portal institucional do SINAN",
+    "notes": "Usado para validar a estrutura oficial do sistema e a existência da área de dados epidemiológicos."
+  },
+  "sinan_epidemiological_data_portal": {
+    "url": "https://portalsinan.saude.gov.br/dados-epidemiologicos-SINAN",
+    "role": "página oficial de dados epidemiológicos do SINAN",
+    "notes": "Aponta para tabulações DATASUS e organiza o acesso por grupos de doenças/agravos."
+  },
+  "opendatasus_dengue_catalog": {
+    "url": "https://opendatasus.saude.gov.br/dataset/arboviroses-dengue",
+    "role": "catálogo oficial dos microdados de dengue",
+    "notes": "Lista recursos anuais CSV/JSON/XML e dicionário de dados do agravo dengue."
+  },
+  "sinan_dengue_dictionary": {
+    "url": "https://s3.sa-east-1.amazonaws.com/ckan.saude.gov.br/SINAN/Dengue/dic_dados_dengue.pdf",
+    "role": "dicionário de dados oficial do dengue",
+    "notes": "Base para interpretação dos campos clínicos, temporais e territoriais usados no processamento."
+  },
+  "basedosdados_sinan": {
+    "url": "https://basedosdados.org/dataset/f51134c2-5ab9-4bbc-882f-f1034603147a",
+    "role": "catálogo alternativo e camada tratada do SINAN",
+    "notes": "Confirma cobertura temporal ampla do SINAN e serve como referência de disponibilidade tratada, mas a integração desta task usa microdado oficial processado localmente."
+  },
+  "tcc1_unified_dataset": {
+    "path": "/Users/filippoferrari/Documents/UnB/TCC/TCC1-DOCS/data_processed/dataset_unificado.csv",
+    "role": "base unificada entregue no TCC1",
+    "notes": "Usada para validar alinhamento temporal e coerência do dataset integrado gerado nesta task."
+  },
+  "tcc1_inmet_daily": {
+    "path": "/Users/filippoferrari/Documents/UnB/TCC/TCC1-DOCS/data_processed/inmet_2022_2024.csv",
+    "role": "base climática diária consolidada do TCC1",
+    "notes": "Fonte climática real agregada para semana epidemiológica na integração."
+  },
+  "sinan_processed_weekly": {
+    "path": "/Users/filippoferrari/Documents/UnB/TCC/MODELO-PREVISAO/data/processed/sinan/weekly_features_brasilia_2022_2024.csv",
+    "role": "agregação semanal do SINAN produzida na task anterior",
+    "notes": "Contém notificações e atributos clínico-epidemiológicos agregados por semana."
+  }
+}

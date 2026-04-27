@@ -1,0 +1,11 @@
+{
+  "generated_files": {
+    "dataset_unificado_csv": "/Users/filippoferrari/Documents/UnB/TCC/TCC2-DOCS/docs/IntegracaoUnificacaoDadosSINAN/evidencias/dataset_unificado_sinan_inmet_brasilia_2022_2024.csv",
+    "quality_summary_json": "/Users/filippoferrari/Documents/UnB/TCC/TCC2-DOCS/docs/IntegracaoUnificacaoDadosSINAN/evidencias/quality_summary_integracao_unificacao_sinan.json",
+    "quality_missingness_csv": "/Users/filippoferrari/Documents/UnB/TCC/TCC2-DOCS/docs/IntegracaoUnificacaoDadosSINAN/evidencias/quality_missingness_integracao_unificacao_sinan.csv",
+    "tcc1_comparison_csv": "/Users/filippoferrari/Documents/UnB/TCC/TCC2-DOCS/docs/IntegracaoUnificacaoDadosSINAN/evidencias/comparacao_com_tcc1_dataset_unificado.csv",
+    "source_lineage_json": "/Users/filippoferrari/Documents/UnB/TCC/TCC2-DOCS/docs/IntegracaoUnificacaoDadosSINAN/evidencias/source_lineage_integracao_unificacao_sinan.json",
+    "schema_json": "/Users/filippoferrari/Documents/UnB/TCC/TCC2-DOCS/docs/IntegracaoUnificacaoDadosSINAN/evidencias/schema_dataset_unificado_sinan_inmet.json",
+    "report_md": "/Users/filippoferrari/Documents/UnB/TCC/TCC2-DOCS/docs/IntegracaoUnificacaoDadosSINAN/evidencias/relatorio_integracao_unificacao_sinan.md"
+  }
+}

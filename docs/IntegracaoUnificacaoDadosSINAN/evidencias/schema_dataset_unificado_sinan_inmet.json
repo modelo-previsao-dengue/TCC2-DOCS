@@ -1,0 +1,408 @@
+{
+  "columns": [
+    {
+      "name": "ANO_SEMANA",
+      "dtype": "object"
+    },
+    {
+      "name": "NOTIFICACOES",
+      "dtype": "int64"
+    },
+    {
+      "name": "idade_anos",
+      "dtype": "float64"
+    },
+    {
+      "name": "atraso_notificacao_dias",
+      "dtype": "float64"
+    },
+    {
+      "name": "sexo_masc",
+      "dtype": "float64"
+    },
+    {
+      "name": "sexo_fem",
+      "dtype": "float64"
+    },
+    {
+      "name": "gestante",
+      "dtype": "float64"
+    },
+    {
+      "name": "hospitalizado",
+      "dtype": "float64"
+    },
+    {
+      "name": "obito_agravo",
+      "dtype": "float64"
+    },
+    {
+      "name": "obito_outras_causas",
+      "dtype": "float64"
+    },
+    {
+      "name": "criterio_lab",
+      "dtype": "float64"
+    },
+    {
+      "name": "criterio_clinico_epi",
+      "dtype": "float64"
+    },
+    {
+      "name": "criterio_clinico",
+      "dtype": "float64"
+    },
+    {
+      "name": "caso_confirmado_provavel",
+      "dtype": "float64"
+    },
+    {
+      "name": "caso_descartado",
+      "dtype": "float64"
+    },
+    {
+      "name": "caso_inconclusivo",
+      "dtype": "float64"
+    },
+    {
+      "name": "caso_dengue_alarme",
+      "dtype": "float64"
+    },
+    {
+      "name": "caso_dengue_grave",
+      "dtype": "float64"
+    },
+    {
+      "name": "caso_chikungunya",
+      "dtype": "float64"
+    },
+    {
+      "name": "raca_branca",
+      "dtype": "float64"
+    },
+    {
+      "name": "raca_preta",
+      "dtype": "float64"
+    },
+    {
+      "name": "raca_amarela",
+      "dtype": "float64"
+    },
+    {
+      "name": "raca_parda",
+      "dtype": "float64"
+    },
+    {
+      "name": "raca_indigena",
+      "dtype": "float64"
+    },
+    {
+      "name": "febre_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "mialgia_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "cefaleia_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "exantema_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "vomito_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "nausea_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "dor_costas_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "conjuntvit_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "artrite_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "artralgia_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "petequia_n_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "leucopenia_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "laco_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "dor_retro_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "diabetes_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "hematolog_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "hepatopat_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "renal_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "hipertensa_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "acido_pept_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "auto_imune_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "alrm_hipot_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "alrm_plaq_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "alrm_vom_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "alrm_sang_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "alrm_hemat_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "alrm_abdom_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "alrm_letar_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "alrm_hepat_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "alrm_liq_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "grav_pulso_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "grav_conv_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "grav_ench_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "grav_insuf_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "grav_taqui_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "grav_extre_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "grav_hipot_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "grav_hemat_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "grav_melen_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "grav_metro_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "grav_sang_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "grav_ast_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "grav_mioc_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "grav_consc_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "grav_orgao_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "mani_hemor_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "epistaxe_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "gengivo_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "metro_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "petequias_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "hematura_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "sangram_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "laco_n_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "plasmatico_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "evidencia_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "plaq_menor_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "con_fhd_flag",
+      "dtype": "float64"
+    },
+    {
+      "name": "ANO_EPI",
+      "dtype": "int64"
+    },
+    {
+      "name": "SEMANA_EPI",
+      "dtype": "int64"
+    },
+    {
+      "name": "dt_sin_pri_min",
+      "dtype": "datetime64[ns]"
+    },
+    {
+      "name": "dt_sin_pri_max",
+      "dtype": "datetime64[ns]"
+    },
+    {
+      "name": "week_start",
+      "dtype": "datetime64[ns]"
+    },
+    {
+      "name": "cluster_intensity_id",
+      "dtype": "int64"
+    },
+    {
+      "name": "cluster_intensity_label",
+      "dtype": "object"
+    },
+    {
+      "name": "cluster_profile_id",
+      "dtype": "int64"
+    },
+    {
+      "name": "cluster_profile_label",
+      "dtype": "object"
+    },
+    {
+      "name": "inmet_days",
+      "dtype": "int64"
+    },
+    {
+      "name": "rain_sum",
+      "dtype": "float64"
+    },
+    {
+      "name": "rain_mean",
+      "dtype": "float64"
+    },
+    {
+      "name": "temp_mean",
+      "dtype": "float64"
+    },
+    {
+      "name": "temp_min",
+      "dtype": "float64"
+    },
+    {
+      "name": "temp_max",
+      "dtype": "float64"
+    },
+    {
+      "name": "humidity_mean",
+      "dtype": "float64"
+    },
+    {
+      "name": "pressure_mean",
+      "dtype": "float64"
+    },
+    {
+      "name": "wind_speed_mean",
+      "dtype": "float64"
+    },
+    {
+      "name": "temp_range",
+      "dtype": "float64"
+    },
+    {
+      "name": "rain_nonzero_days",
+      "dtype": "int64"
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "scope": {
+    "municipality_name": "Brasilia",
+    "municipality_code": "5300108",
+    "uf": "DF",
+    "years": [
+      2022,
+      2023,
+      2024
+    ]
+  },
+  "record_counts": {
+    "sinan_normalized_rows": 399094,
+    "sinan_weekly_rows": 156,
+    "inmet_weekly_rows": 158,
+    "unified_rows": 156,
+    "unified_columns": 101
+  },
+  "join_quality": {
+    "sinan_weeks_without_inmet": 0,
+    "full_match_pct": 100.0,
+    "duplicated_ano_semana": 0,
+    "duplicated_week_start": 0
+  },
+  "temporal_coverage": {
+    "min_week_start": "2022-01-02",
+    "max_week_start": "2024-12-22",
+    "min_ano_semana": "202201",
+    "max_ano_semana": "202452"
+  },
+  "key_missingness_pct": {
+    "ANO_SEMANA": 0.0,
+    "week_start": 0.0,
+    "NOTIFICACOES": 0.0,
+    "rain_sum": 0.0,
+    "temp_mean": 0.0,
+    "humidity_mean": 0.0,
+    "pressure_mean": 0.0,
+    "wind_speed_mean": 0.0,
+    "cluster_intensity_label": 0.0,
+    "cluster_profile_label": 0.0
+  },
+  "tcc1_alignment": {
+    "overlap_weeks": 156,
+    "tcc1_rows": 156,
+    "new_unified_rows": 156,
+    "date_min": "2022-01-02",
+    "date_max": "2024-12-22",
+    "totals": {
+      "tcc1_cases_total": 463560,
+      "new_notifications_total": 399094,
+      "total_difference": 64466
+    },
+    "correlations": {
+      "casos_dengue_vs_notificacoes": 0.999229,
+      "chuva_vs_rain_sum": 0.925975,
+      "temperatura_media_vs_temp_mean": 0.999994,
+      "umidade_vs_humidity_mean": 0.999994,
+      "pressao_vs_pressure_mean": 0.999991
+    },
+    "absolute_differences": {
+      "equal_case_weeks": 0,
+      "max_case_difference": 3266,
+      "mean_case_difference": 418.2436
+    }
+  }
+}
