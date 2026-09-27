@@ -1,25 +1,18 @@
-# LaTeX build artifacts
+# Auxiliares da compilacao (latexmk grava tudo em build/)
+build/
 *.aux
 *.bbl
-*.bcf
 *.blg
 *.fdb_latexmk
 *.fls
-*.idx
-*.ilg
-*.ind
-*.lof
 *.log
-*.lot
-*.out
-*.run.xml
 *.synctex.gz
-*.synctex(busy)
 *.toc
-*.xdv
+*.lof
+*.lot
+*.idx
+*.out
+*-eps-converted-to.pdf
 
-# Generated PDF (remove this line if you want to track the PDF)
+# PDF gerado (build.ps1 copia para TCC2.pdf)
 *.pdf
-
-# Editor
-.vscode/
