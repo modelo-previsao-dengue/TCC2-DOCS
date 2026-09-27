@@ -1,0 +1,531 @@
+\chapter{Metodologia}
+\label{cap:metodologia}
+
+Este capítulo apresenta a metodologia proposta para o desenvolvimento completo do TCC~2, intitulado ``Desenvolvimento de um Modelo de Previsão para Surtos de Dengue em Municípios Brasileiros utilizando Séries Temporais e Dados Climáticos''. A metodologia descreve um planejamento estruturado do que será realizado, sem se ater a datas específicas, mas detalhando os passos a serem seguidos para a entrega completa do trabalho.
+
+\section{O Que Será Feito}
+
+O trabalho será desenvolvido em quatro fases sequenciais, cada uma com objetivos específicos e entregas definidas.
+
+\subsection{Fase 1: Consolidação e Expansão da Base de Dados}
+
+\subsubsection{Coleta e Processamento de Dados Climáticos}
+
+Será realizada a coleta e processamento de dados meteorológicos históricos do Instituto Nacional de Meteorologia (INMET) para a estação meteorológica automática de Brasília (código A001), cobrindo o período de 2000 a 2025, totalizando 26 anos de observações. Os dados serão obtidos através do portal BDMEP (Banco de Dados Meteorológicos para Ensino e Pesquisa) do INMET, que disponibiliza arquivos CSV com dados horários e diários.
+
+As variáveis meteorológicas coletadas incluem:
+\begin{itemize}
+    \item Precipitação acumulada (mm)
+    \item Temperatura do ar: mínima, média e máxima ($~^\circ\mathrm{C}$)
+    \item Umidade relativa do ar média (\%)
+    \item Pressão atmosférica ao nível da estação (hPa)
+    \item Velocidade média do vento (m/s)
+\end{itemize}
+
+Os dados brutos serão processados para padronização de codificações (Latin-1, UTF-8), normalização de nomes de colunas e conversão de tipos de dados. Em seguida, será realizada agregação temporal dos dados diários para a granularidade semanal, alinhada às semanas epidemiológicas:
+\begin{itemize}
+    \item Precipitação: soma acumulada semanal (mm/semana)
+    \item Temperaturas: média aritmética semanal ($~^\circ\mathrm{C}$/semana)
+    \item Umidade relativa: média aritmética semanal (\%/semana)
+    \item Pressão atmosférica: média aritmética semanal (hPa/semana)
+    \item Velocidade do vento: média aritmética semanal (m/s/semana)
+\end{itemize}
+
+\subsubsection{Coleta e Processamento de Dados Epidemiológicos}
+
+Será realizada a coleta de dados epidemiológicos de dengue através da API REST do InfoDengue, sistema desenvolvido pela Fundação Oswaldo Cruz (Fiocruz) que integra e disponibiliza dados do Sistema de Informação de Agravos de Notificação (SINAN) de forma agregada e padronizada. A coleta será realizada para o Distrito Federal desde 2007, ano em que os dados históricos completos estão disponíveis na plataforma.
+
+Os dados serão coletados com granularidade semanal (semana epidemiológica) e incluem:
+\begin{itemize}
+    \item Casos notificados de dengue por semana epidemiológica
+    \item Casos estimados (quando disponível, considera subnotificação)
+    \item Data de início da semana epidemiológica
+    \item Código geográfico do município (código IBGE)
+\end{itemize}
+
+As requisições à API serão implementadas com tratamento de erros, retry logic e rate limiting para garantir robustez e evitar sobrecarga do servidor. Os dados brutos serão armazenados em formato JSON e posteriormente processados para formato tabular CSV.
+
+\subsubsection{Integração e Unificação dos Datasets}
+
+Os datasets climáticos e epidemiológicos serão integrados através de operação de merge baseada na chave temporal (data de início da semana epidemiológica). O processo de unificação seguirá os seguintes passos:
+
+\begin{enumerate}
+    \item Conversão de todas as datas para formato ISO 8601 (YYYY-MM-DD)
+    \item Alinhamento à data de início da Semana Epidemiológica (domingos)
+    \item Sincronização das frequências temporais entre bases
+    \item Tratamento de dados faltantes: interpolação linear para variáveis climáticas contínuas com lacunas pequenas (até 3 semanas consecutivas)
+    \item Validação de completude temporal e identificação de períodos com dados ausentes
+\end{enumerate}
+
+O resultado será um dataset unificado com estrutura contendo as colunas: data, semana\_epidemiologica, ano, casos\_dengue, chuva, temperatura\_minima, temperatura\_media, temperatura\_maxima, umidade, pressao, velocidade\_vento.
+
+\subsubsection{Expansão para Múltiplos Municípios}
+
+Após validação do processo para Brasília, o pipeline será expandido para todos os municípios brasileiros com dados disponíveis. Para municípios sem estação meteorológica local, serão utilizadas estações vizinhas (dentro de raio de 50 km) ou dados de reanálise climática (ERA5, CHIRPS) com documentação explícita da fonte utilizada.
+
+\subsection{Fase 2: Engenharia de Atributos e Análise Exploratória}
+
+\subsubsection{Construção de Atributos Defasados}
+
+Serão construídos atributos defasados (lags) de 1 a 12 semanas para todas as variáveis climáticas e para os casos de dengue. Esta faixa de defasagens é justificada pelo ciclo biológico do Aedes aegypti:
+\begin{itemize}
+    \item Período de desenvolvimento do mosquito (ovo → larva → pupa → adulto): 7-10 dias em condições ideais
+    \item Período de incubação do vírus no mosquito: 8-12 dias
+    \item Período de incubação no humano: 4-10 dias
+    \item Portanto, efeitos climáticos podem se manifestar com defasagens de 2 a 12 semanas
+\end{itemize}
+
+Para cada variável, serão criadas colunas representando valores de 1, 2, 3, 4, 6, 8, 10 e 12 semanas anteriores.
+
+\subsubsection{Construção de Atributos Derivados}
+
+Serão calculados os seguintes atributos derivados:
+
+\begin{itemize}
+    \item \textbf{Médias móveis}: médias aritméticas de 2, 4, 8 e 12 semanas para cada variável climática
+    \item \textbf{Desvios móveis}: desvios padrão de 4 e 8 semanas para capturar variabilidade temporal
+    \item \textbf{Anomalias climáticas}: diferença entre valor observado e média climatológica mensal histórica (período de referência: 2000-2024)
+    \item \textbf{Contagem de dias chuvosos}: número de dias com precipitação superior a 1 mm dentro de cada semana
+    \item \textbf{Indicadores de transição sazonal}: variáveis binárias indicando transição entre estação seca (maio a setembro) e chuvosa (outubro a abril)
+    \item \textbf{Índices de extremos}: contagem de dias com temperatura acima do percentil 90 e abaixo do percentil 10 da série histórica
+\end{itemize}
+
+\subsubsection{Análise Exploratória Estatística}
+
+Para cada município, será realizada análise exploratória completa documentada em relatórios Markdown, incluindo:
+
+\begin{itemize}
+    \item \textbf{Estatísticas descritivas}: medidas de tendência central, dispersão, assimetria e curtose para todas as variáveis
+    \item \textbf{Análise de correlação}: cálculo de correlações de Pearson e Spearman entre variáveis climáticas e casos de dengue, com interpretação da força (forte: |r| ≥ 0,7; moderada: 0,4 ≤ |r| < 0,7; fraca: 0,2 ≤ |r| < 0,4; muito fraca: |r| < 0,2) e direção (positiva ou negativa)
+    \item \textbf{Função de Correlação Cruzada (CCF)}: identificação de lags predominantes até doze semanas para cada variável climática
+    \item \textbf{Teste de Causalidade de Granger}: avaliação da precedência temporal entre variáveis climáticas e casos de dengue, testando defasagens de 1 a 4 semanas com nível de significância de 5\%
+    \item \textbf{Visualizações}: séries temporais, gráficos de dispersão, matrizes de correlação e heatmaps
+\end{itemize}
+
+\subsection{Fase 3: Desenvolvimento de Modelos Preditivos}
+
+\subsubsection{Definição do Problema de Previsão}
+
+O problema será formulado como previsão de casos de dengue para as próximas 1, 2, 4 e 8 semanas, utilizando informações históricas de casos e variáveis climáticas. A previsão será realizada em escala semanal, alinhada à granularidade dos dados epidemiológicos oficiais.
+
+\subsubsection{Seleção e Treinamento de Modelos}
+
+Serão desenvolvidas três famílias de modelos para cada município:
+
+\textbf{Modelos Estatísticos}:
+\begin{itemize}
+    \item \textbf{SARIMA (Seasonal AutoRegressive Integrated Moving Average)}: modelo autorregressivo integrado de médias móveis com componente sazonal, adequado para capturar padrões temporais e sazonalidade anual
+    \item \textbf{SARIMAX}: extensão do SARIMA incluindo variáveis exógenas (regressoras climáticas)
+    \item \textbf{Prophet}: modelo de decomposição aditiva desenvolvido pelo Facebook, com suporte a sazonalidades múltiplas (anual, semanal), feriados regionais e regressoras externas
+\end{itemize}
+
+\textbf{Modelos de Aprendizado de Máquina}:
+\begin{itemize}
+    \item \textbf{Random Forest}: ensemble de árvores de decisão com ajuste de hiperparâmetros incluindo número de árvores, profundidade máxima, amostragem de atributos e ponderação temporal
+    \item \textbf{XGBoost (Extreme Gradient Boosting)}: algoritmo de boosting com otimização de taxa de aprendizado, regularização L1 e L2, número de estimadores e janela de early stopping baseada em validação temporal
+\end{itemize}
+
+\subsubsection{Seleção Automática de Hiperparâmetros}
+
+A seleção de hiperparâmetros será automatizada utilizando técnicas de otimização:
+\begin{itemize}
+    \item \textbf{Grid Search}: busca exaustiva em espaço de hiperparâmetros pré-definido para modelos estatísticos
+    \item \textbf{Random Search}: amostragem aleatória de combinações de hiperparâmetros para modelos de machine learning
+    \item \textbf{Optuna}: framework de otimização bayesiana para modelos de deep learning
+\end{itemize}
+
+Todos os experimentos serão registrados em MLflow ou ferramenta equivalente, garantindo rastreabilidade de configurações, métricas de desempenho e artefatos gerados.
+
+\subsubsection{Pós-processamento e Geração de Alertas}
+
+As previsões numéricas serão convertidas em alertas categóricos através de classificação baseada em quantis históricos específicos de cada município:
+\begin{itemize}
+    \item \textbf{Verde}: casos previstos abaixo do percentil 25 da série histórica (baixo risco)
+    \item \textbf{Amarelo}: casos previstos entre percentil 25 e 50 (risco moderado)
+    \item \textbf{Laranja}: casos previstos entre percentil 50 e 75 (risco alto)
+    \item \textbf{Vermelho}: casos previstos acima do percentil 75 (risco muito alto)
+\end{itemize}
+
+Os limiares serão recalculados anualmente para refletir mudanças nos padrões epidemiológicos.
+
+\subsection{Fase 4: Integração em Sistema de Alerta e Deploy}
+
+\subsubsection{Detecção de Anomalias}
+
+Serão desenvolvidos módulos de detecção de anomalias que sinalizem divergências entre previsões e observações, indicando possíveis falhas de dados ou eventos epidemiológicos inéditos. As técnicas incluirão:
+\begin{itemize}
+    \item Detecção de outliers estatísticos (método IQR, regra de 3 desvios padrão)
+    \item Análise de resíduos dos modelos
+    \item Alertas quando diferença entre previsão e observação exceder limites pré-definidos
+\end{itemize}
+
+\subsubsection{Desenvolvimento de API REST}
+
+Será desenvolvida uma API REST utilizando FastAPI para disponibilizar os resultados das previsões. A API incluirá endpoints para:
+\begin{itemize}
+    \item Consulta de previsões por município e horizonte temporal
+    \item Consulta de histórico de previsões e observações
+    \item Consulta de estatísticas descritivas e análises exploratórias
+    \item Atualização manual de modelos (retreinamento sob demanda)
+\end{itemize}
+
+A API será documentada utilizando OpenAPI/Swagger e implementará autenticação e rate limiting para garantir segurança e estabilidade.
+
+\subsubsection{Desenvolvimento de Dashboard}
+
+Será desenvolvido um dashboard interativo utilizando Streamlit para visualização dos resultados. O dashboard incluirá:
+\begin{itemize}
+    \item Visualização de séries temporais de casos observados e previstos
+    \item Mapas de calor mostrando alertas por município
+    \item Gráficos de correlação e análise exploratória
+    \item Tabelas de métricas de desempenho dos modelos
+    \item Exportação de relatórios em PDF
+\end{itemize}
+
+\subsubsection{Automação e Atualização Semanal}
+
+Será implementado um pipeline automatizado que, a cada nova semana epidemiológica:
+\begin{enumerate}
+    \item Coleta dados atualizados do SINAN via InfoDengue
+    \item Coleta dados climáticos atualizados do INMET
+    \item Processa e integra os novos dados
+    \item Gera novas previsões utilizando modelos treinados
+    \item Atualiza alertas categóricos
+    \item Publica resultados na API e dashboard
+    \item Envia notificações por email para gestores de saúde pública
+\end{enumerate}
+
+O pipeline será executado em ambiente de produção isolado, sem interferência nos serviços existentes do Meca-App-Cliente.
+
+\section{Quais Algoritmos Devem Ser Criados}
+
+\subsection{Algoritmos de Processamento de Dados}
+
+\subsubsection{Localizador e Processador de Arquivos INMET}
+
+Algoritmo que identifica automaticamente arquivos CSV do INMET em diretórios locais, filtra por código de estação e período temporal, normaliza colunas (tratando variações de nomenclatura entre anos), corrige codificações de caracteres (Latin-1, UTF-8) e agrega valores diários em totais (precipitação) ou médias semanais (demais variáveis). O algoritmo deve tratar diferentes formatos de arquivo e estruturas de dados que variam ao longo dos anos.
+
+\subsubsection{Coletor de Dados SINAN via InfoDengue}
+
+Algoritmo que executa requisições HTTP paginadas à API REST do InfoDengue, trata códigos de status HTTP (200, 404, 500, etc.), implementa retry logic com backoff exponencial, aplica rate limiting (delay entre requisições) e armazena versões brutas (JSON) e tratadas (CSV) com controle de versão e metadados (data de coleta, versão da API).
+
+\subsubsection{Unificador Multimunicipal}
+
+Algoritmo que replica o processo de unificação de datasets para múltiplos municípios, garantindo chaves temporais consistentes (data e semana\_epidemiologica), tratando fusões e desmembramentos municipais ao longo do tempo, e gerando um acervo semanal integrado pronto para modelagem com estrutura padronizada.
+
+\subsection{Algoritmos de Engenharia de Atributos}
+
+\subsubsection{Gerador de Lags Temporais}
+
+Algoritmo que constrói atributos defasados de 1 a 12 semanas para todas as variáveis, tratando valores faltantes nas bordas da série temporal e documentando a origem de cada atributo.
+
+\subsubsection{Calculador de Atributos Derivados}
+
+Algoritmo que calcula médias móveis, desvios móveis, anomalias climáticas (utilizando climatologia mensal histórica), contagem de dias chuvosos, indicadores de transição sazonal e índices de extremos climáticos.
+
+\subsection{Algoritmos de Modelagem}
+
+\subsubsection{Seletor Automático de Ordens SARIMA/SARIMAX}
+
+Algoritmo que utiliza critérios de informação (AIC, BIC) para seleção automática de ordens (p, d, q) e componentes sazonais (P, D, Q, s), realiza testes de estacionariedade (ADF) e aplica diferenciação quando necessário, incluindo variáveis exógenas climáticas no modelo SARIMAX.
+
+\subsubsection{Treinador de Modelos Prophet}
+
+Algoritmo que configura decomposição aditiva com sazonalidades anual e semanal, inclui feriados regionais brasileiros, adiciona regressoras climáticas e ajusta hiperparâmetros de crescimento, sazonalidade e feriados.
+
+\subsubsection{Treinador de Random Forest}
+
+Algoritmo que ajusta número de árvores, profundidade máxima, número mínimo de amostras para divisão e folha, amostragem de atributos (max\_features), amostragem de observações (bootstrap) e ponderação temporal para enfatizar observações recentes.
+
+\subsubsection{Treinador de XGBoost}
+
+Algoritmo que otimiza taxa de aprendizado (learning\_rate), regularização L1 (alpha) e L2 (lambda), número de estimadores, profundidade máxima, subsampling de linhas e colunas, e implementa early stopping baseado em validação temporal.
+
+\subsubsection{Construtor de Arquiteturas LSTM/BiLSTM}
+
+Algoritmo que constrói redes neurais recorrentes com configuração de número de camadas LSTM, número de unidades por camada, dropout temporal, normalização de batch, camada densa final e compilação com otimizador (Adam, RMSprop) e função de perda (MSE, MAE, Huber).
+
+\subsubsection{Construtor de Arquitetura CNN-LSTM}
+
+Algoritmo que combina blocos convolucionais unidimensionais (número de filtros, tamanho do kernel, ativação) com camadas LSTM para capturar padrões locais e dependências de longo prazo, respectivamente.
+
+\subsection{Algoritmos de Validação e Avaliação}
+
+\subsubsection{Implementador de Walk-Forward Validation}
+
+Algoritmo que implementa validação temporal walk-forward, onde cada janela treina em todo o histórico disponível até o ponto atual e testa nas semanas seguintes, respeitando a cronologia e evitando vazamento de informação temporal.
+
+\subsubsection{Calculador de Métricas de Desempenho}
+
+Algoritmo que calcula RMSE (Root Mean Squared Error), MAE (Mean Absolute Error), MAPE (Mean Absolute Percentage Error) com salvaguardas para divisão por zero, F1-Score e AUC-ROC para classificação de alertas categóricos.
+
+\subsubsection{Gerador de Relatórios de Análise Exploratória}
+
+Algoritmo que gera relatórios Markdown completos com estatísticas descritivas, tabelas de correlação, resultados de testes de Granger, visualizações (séries temporais, dispersões, heatmaps) e interpretações estatísticas para cada município.
+
+\section{Como os Algoritmos Serão Testados}
+
+\subsection{Validação Temporal}
+
+\subsubsection{Walk-Forward Validation}
+
+Será aplicada validação walk-forward, onde cada janela temporal treina modelos em todo o histórico disponível até o ponto atual e testa nas semanas seguintes, respeitando rigorosamente a cronologia. Esta abordagem simula o cenário real de produção, onde modelos são treinados com dados históricos e utilizados para prever o futuro. O processo será repetido para múltiplas janelas de teste, cobrindo diferentes períodos temporais, incluindo anos epidêmicos e não-epidêmicos.
+
+\subsubsection{Time Series Cross-Validation}
+
+Será utilizada validação cruzada específica de séries temporais (TimeSeriesSplit) para seleção de hiperparâmetros, garantindo que não haja vazamento de informação temporal. O TimeSeriesSplit divide a série em múltiplas dobras, onde cada dobra de treinamento contém apenas observações anteriores à dobra de teste correspondente.
+
+\subsection{Métricas Quantitativas de Desempenho}
+
+\subsubsection{Métricas de Erro em Escala Absoluta}
+
+\begin{itemize}
+    \item \textbf{RMSE (Root Mean Squared Error)}: mede a raiz quadrada da média dos erros ao quadrado, penalizando erros grandes
+\end{itemize}
+
+
+\subsubsection{Métricas de Classificação}
+
+\begin{itemize}
+    \item \textbf{F1-Score}: média harmônica entre precisão e recall, medindo a capacidade de identificar corretamente semanas acima de limiares epidêmicos
+    \item \textbf{AUC-ROC (Area Under the Receiver Operating Characteristic Curve)}: mede a capacidade discriminativa do modelo em distinguir entre semanas de alto e baixo risco, utilizando limiares definidos por percentis históricos adaptados a cada município
+\end{itemize}
+
+\subsection{Testes Operacionais}
+
+\subsubsection{Avaliação de Performance Computacional}
+
+Será medido o tempo de treinamento e inferência para cada modelo, assegurando que atualizações semanais sejam viáveis em hardware padrão (processadores com 4-8 cores, 16-32 GB de RAM). Será avaliado o consumo de memória durante o treinamento e a capacidade de paralelização ao processar múltiplos municípios em sequência.
+
+\subsubsection{Dimensionamento de Infraestrutura}
+
+Será dimensionada a infraestrutura necessária para produção, considerando:
+\begin{itemize}
+    \item Número de municípios a serem processados
+    \item Frequência de atualização (semanal)
+    \item Tempo máximo aceitável para geração de previsões (SLA)
+    \item Capacidade de armazenamento para dados históricos e modelos treinados
+\end{itemize}
+
+\section{Quais Bases de Dados Serão Usadas}
+
+\subsection{Base de Dados Epidemiológica: SINAN via InfoDengue}
+
+\subsubsection{Descrição e Fonte}
+
+O Sistema de Informação de Agravos de Notificação (SINAN) é o sistema oficial do Ministério da Saúde brasileiro para notificação, investigação e acompanhamento de casos de doenças de notificação compulsória, incluindo dengue. Os dados são acessados através da API REST do InfoDengue, sistema desenvolvido pela Fundação Oswaldo Cruz (Fiocruz) que integra e disponibiliza dados do SINAN de forma agregada e padronizada.
+
+\subsubsection{Características dos Dados}
+
+\begin{itemize}
+    \item \textbf{Granularidade Temporal}: Semana Epidemiológica (SE), alinhada ao calendário epidemiológico brasileiro
+    \item \textbf{Granularidade Espacial}: Município (código IBGE de 7 dígitos)
+    \item \textbf{Período Disponível}: Dados históricos desde 2007, atualizados semanalmente
+    \item \textbf{Formato de Acesso}: API REST retornando JSON, com endpoints para consulta por município, período e doença
+    \item \textbf{Campos Principais}: data\_iniSE (data de início da semana epidemiológica), SE (número da semana no formato YYYYWW), casos (total de casos notificados), casos\_est (casos estimados considerando subnotificação)
+\end{itemize}
+
+\subsubsection{Considerações Metodológicas}
+
+\begin{itemize}
+    \item \textbf{Atraso de Notificação}: Os dados apresentam atraso natural entre a data de início dos sintomas e a notificação oficial (média de 7-14 dias)
+    \item \textbf{Subnotificação}: Estimada entre 30\% e 50\% em períodos não-epidêmicos, variando entre municípios e períodos
+    \item \textbf{Qualidade Variável}: A qualidade e completude dos dados podem variar entre municípios, dependendo da capacidade de vigilância local
+\end{itemize}
+
+\subsection{Base de Dados Climática: INMET via BDMEP}
+
+\subsubsection{Descrição e Fonte}
+
+O Instituto Nacional de Meteorologia (INMET) é a instituição responsável pela coleta, processamento e disponibilização de dados meteorológicos no Brasil. Os dados são acessados através do Portal BDMEP (Banco de Dados Meteorológicos para Ensino e Pesquisa), que disponibiliza dados históricos em formato CSV para download gratuito.
+
+\subsubsection{Estação Meteorológica de Referência}
+
+Para o Distrito Federal, será utilizada a Estação Meteorológica Automática de Brasília:
+\begin{itemize}
+    \item \textbf{Código}: A001
+    \item \textbf{Localização}: Distrito Federal, região central do Brasil
+    \item \textbf{Coordenadas}: Aproximadamente 15°47'S, 47°55'W
+    \item \textbf{Altitude}: Aproximadamente 1.100 metros acima do nível do mar
+    \item \textbf{Tipo}: Estação Automática (coleta contínua e automática de dados)
+    \item \textbf{Período Disponível}: Dados históricos de 2000 a 2025 (26 anos)
+\end{itemize}
+
+\subsubsection{Variáveis Meteorológicas}
+
+As seguintes variáveis serão utilizadas, selecionadas com base na literatura científica sobre sua relevância para a transmissão de dengue:
+
+\begin{enumerate}
+    \item \textbf{Precipitação Total (mm)}: Quantidade de chuva acumulada, agregada como soma semanal
+    \item \textbf{Temperatura do Ar}: Mínima, média e máxima, agregadas como médias semanais
+    \item \textbf{Umidade Relativa do Ar (\%)}: Média semanal
+    \item \textbf{Pressão Atmosférica (hPa)}: Média semanal ao nível da estação
+    \item \textbf{Velocidade Média do Vento (m/s)}: Média semanal
+\end{enumerate}
+
+\subsubsection{Considerações Metodológicas}
+
+\begin{itemize}
+    \item \textbf{Falhas de Medição}: Podem ocorrer interrupções no registro devido a falhas de equipamento, manutenção ou problemas de transmissão
+    \item \textbf{Valores Padrão de Erro}: O INMET utiliza códigos especiais (ex: -9999) para indicar valores inválidos ou faltantes
+    \item \textbf{Representatividade Espacial}: Dados de uma única estação podem não capturar toda a variabilidade espacial, porém a pequena extensão territorial do DF (5.760 km²) e a localização central da estação justificam sua representatividade
+\end{itemize}
+
+\subsection{Dataset Unificado Final}
+
+O resultado da integração das bases será um dataset unificado contendo:
+\begin{itemize}
+    \item \textbf{Dimensão Temporal}: Observações semanais cobrindo o período de 2000 a 2025 (quando disponível para cada município)
+    \item \textbf{Dimensão Espacial}: Inicialmente Distrito Federal, expandido para todos os municípios brasileiros com dados disponíveis
+    \item \textbf{Estrutura}: Tabela retangular com colunas: data, semana\_epidemiologica, ano, casos\_dengue, chuva, temperatura\_minima, temperatura\_media, temperatura\_maxima, umidade, pressao, velocidade\_vento
+    \item \textbf{Formato}: CSV com codificação UTF-8
+\end{itemize}
+
+\section{Quais Testes Estatísticos, de Viés e de Validação Serão Feitos}
+
+\subsection{Testes Estatísticos Exploratórios}
+
+\subsubsection{Testes de Correlação}
+
+\textbf{Correlação de Pearson (r)}:
+\begin{itemize}
+    \item \textbf{Objetivo}: Medir relação linear entre variáveis climáticas e casos de dengue
+    \item \textbf{Intervalo de Valores}: [-1, +1]
+    \item \textbf{Interpretação da Força}: |r| ≥ 0,7 (forte), 0,4 ≤ |r| < 0,7 (moderada), 0,2 ≤ |r| < 0,4 (fraca), |r| < 0,2 (muito fraca)
+    \item \textbf{Pressupostos}: Normalidade dos dados, linearidade da relação, homoscedasticidade
+    \item \textbf{Validação}: Cálculo de intervalos de confiança (IC 95\%) via transformação de Fisher e teste t-Student para significância estatística
+\end{itemize}
+
+\textbf{Correlação de Spearman (ρ)}:
+\begin{itemize}
+    \item \textbf{Objetivo}: Medir relação monotônica (não necessariamente linear) entre variáveis
+    \item \textbf{Vantagem}: Robustez a outliers e não requer normalidade dos dados
+    \item \textbf{Método}: Baseada nos postos (ranks) dos valores
+    \item \textbf{Uso Complementar}: Quando Pearson indica correlação fraca, Spearman pode revelar relações não-lineares
+\end{itemize}
+
+\subsubsection{Função de Correlação Cruzada (CCF)}
+
+\begin{itemize}
+    \item \textbf{Objetivo}: Identificar lags predominantes até doze semanas para cada variável climática em relação aos casos de dengue
+    \item \textbf{Método}: Cálculo de correlação entre série de casos e série climática defasada em diferentes lags
+    \item \textbf{Interpretação}: Lags com correlação máxima indicam defasagem temporal ótima para previsão
+\end{itemize}
+
+\subsubsection{Teste de Causalidade de Granger}
+
+\begin{itemize}
+    \item \textbf{Objetivo}: Verificar se variáveis climáticas passadas melhoram estatisticamente a previsão de casos futuros de dengue
+    \item \textbf{Fundamentação}: Uma variável X "causa no sentido de Granger" uma variável Y se a inclusão de valores passados de X reduz significativamente o erro de previsão de Y
+    \item \textbf{Implementação}: Comparação de modelos autorregressivos com e sem variáveis climáticas defasadas
+    \item \textbf{Defasagens Testadas}: 1, 2, 3 e 4 semanas
+    \item \textbf{Hipótese Nula}: A variável climática não causa (no sentido de Granger) os casos de dengue
+    \item \textbf{Nível de Significância}: α = 0,05 (5\%)
+    \item \textbf{Estatística de Teste}: Teste F para comparar modelos aninhados
+    \item \textbf{Correção de Múltiplas Comparações}: Aplicação de correção de Bonferroni ou FDR (False Discovery Rate) ao testar múltiplas variáveis e múltiplos lags simultaneamente
+\end{itemize}
+
+\subsection{Testes de Validação de Dados}
+
+\subsubsection{Testes de Qualidade}
+
+\textbf{Teste de Outliers}:
+\begin{itemize}
+    \item \textbf{Métodos}: Regra de 3 desvios padrão, método IQR (Interquartile Range)
+    \item \textbf{Validação Física}: Verificação se outliers estão dentro de limites fisicamente plausíveis (temperatura: $-10~^\circ\mathrm{C}$ a $50~^\circ\mathrm{C}$ para Brasília; precipitação: não negativa, valores máximos razoáveis; umidade: 0\% a 100\%; pressão: 850 hPa a 950 hPa para altitude de ~1100m)
+    \item \textbf{Ação}: Documentação e investigação manual de outliers extremos antes de qualquer remoção
+\end{itemize}
+
+\textbf{Teste de Completude}:
+\begin{itemize}
+    \item \textbf{Métrica}: Percentual de valores faltantes por variável
+    \item \textbf{Tolerância}: Aceitável até 5\% de dados faltantes por variável
+    \item \textbf{Ação}: Interpolação linear para variáveis contínuas com lacunas pequenas (até 3 semanas consecutivas), documentação de períodos com dados faltantes extensos
+\end{itemize}
+
+\textbf{Teste de Consistência Temporal}:
+\begin{itemize}
+    \item \textbf{Verificação}: Identificação de gaps ou sobreposições nas séries temporais
+    \item \textbf{Método}: Verificação de continuidade sequencial das datas
+    \item \textbf{Ação}: Documentação de períodos com dados ausentes e análise de impacto
+\end{itemize}
+
+\subsubsection{Testes de Pressupostos Estatísticos}
+
+\textbf{Teste de Autocorrelação}:
+\begin{itemize}
+    \item \textbf{Método}: Função de Autocorrelação (ACF) e Teste de Ljung-Box
+    \item \textbf{Objetivo}: Verificar dependência temporal (autocorrelação) nas séries
+    \item \textbf{Interpretação}: Autocorrelação significativa indica estrutura temporal que deve ser considerada nas análises
+\end{itemize}
+
+\subsection{Testes de Viés}
+
+\subsubsection{Viés de Seleção Temporal}
+
+\begin{itemize}
+    \item \textbf{Risco}: Período selecionado pode não representar toda a variabilidade climática histórica
+    \item \textbf{Mitigação}: Utilização de toda a série histórica disponível (2000-2025), comparação com estatísticas climáticas históricas de longo prazo (30 anos) do INMET, verificação se o período contém anos representativos (epidêmicos e não-epidêmicos)
+    \item \textbf{Limitação Reconhecida}: Resultados podem ser específicos ao período analisado, porém a extensão temporal (26 anos) minimiza este viés
+\end{itemize}
+
+\subsubsection{Viés de Medição/Subnotificação}
+
+\begin{itemize}
+    \item \textbf{Risco}: Subnotificação de casos de dengue pode subestimar correlações ou mascarar padrões
+    \item \textbf{Mitigação}: Uso de dados oficiais (SINAN) como melhor proxy disponível, análise considerando que subnotificação tende a ser constante proporcionalmente, comparação de tendências com casos estimados (casos\_est) quando disponíveis
+    \item \textbf{Limitação Reconhecida}: Correlações podem estar subestimadas devido à subnotificação
+\end{itemize}
+
+\subsubsection{Viés de Agregação Espacial}
+
+\begin{itemize}
+    \item \textbf{Risco}: Dados de uma única estação meteorológica podem não representar toda a variabilidade espacial
+    \item \textbf{Mitigação}: Seleção da estação central e representativa (Brasília A001), consideração de que o DF é uma área geográfica relativamente pequena (5.760 km²), documentação desta limitação metodológica
+    \item \textbf{Limitação Reconhecida}: Microclimas locais podem não ser capturados
+\end{itemize}
+
+\subsubsection{Viés de Agregação Temporal}
+
+\begin{itemize}
+    \item \textbf{Risco}: Agregação semanal pode mascarar efeitos de eventos climáticos de curta duração
+    \item \textbf{Mitigação}: Justificativa de que ciclo biológico do mosquito requer período de pelo menos uma semana, agregação semanal alinhada à granularidade dos dados epidemiológicos (semana epidemiológica)
+\end{itemize}
+
+\subsection{Validação Complementar}
+
+\subsubsection{Análise de Resíduos}
+
+Para cada modelo treinado, serão aplicados os seguintes testes:
+\begin{itemize}
+    \item \textbf{Teste de Ljung-Box}: Verifica se resíduos são não-correlacionados (hipótese de ruído branco)
+    \item \textbf{Teste de Shapiro-Wilk}: Verifica normalidade dos resíduos
+    \item \textbf{Teste de Breusch-Pagan}: Verifica homocedasticidade dos resíduos (variância constante)
+\end{itemize}
+
+Violações dos pressupostos serão documentadas e, quando possível, corrigidas através de transformações ou ajustes no modelo.
+
+\subsubsection{Interpretação de Modelos}
+
+\begin{itemize}
+    \item \textbf{SHAP (SHapley Additive exPlanations)}: Aplicado para Random Forest e XGBoost, quantificando a contribuição de cada variável e lag para as previsões
+    \item \textbf{Análises de Sensitividade}: Aplicadas para LSTM e CNN-LSTM, variando valores de entrada e observando impacto nas previsões
+    \item \textbf{Documentação}: Registro das variáveis e lags determinantes para cada município e modelo
+\end{itemize}
+
+\subsubsection{Robustez a Falhas de Dados}
+
+Serão realizadas simulações removendo blocos de semanas (1, 2, 4 semanas consecutivas) para quantificar a tolerância do pipeline a:
+\begin{itemize}
+    \item Atrasos de notificação epidemiológica
+    \item Falhas de sensores meteorológicos
+    \item Interrupções temporais na coleta de dados
+\end{itemize}
+
+As simulações permitirão estabelecer limites de aceitação e estratégias de mitigação para produção.
+
+\subsubsection{Validação Cruzada Temporal}
+
+Será realizada validação cruzada temporal dividindo a série em subperíodos (ex: 2000-2010, 2011-2020, 2021-2025) para verificar se correlações e desempenho dos modelos são consistentes entre diferentes períodos temporais. Se correlações e métricas de desempenho forem similares entre períodos, indica robustez dos resultados.
+
+Este planejamento metodológico garante que o TCC~2 disponha de diretrizes claras e detalhadas para transformar o estudo piloto de Brasília em um sistema nacional de previsão de surtos de dengue, preservando rigor estatístico, rastreabilidade de decisões técnicas e capacidade de generalização para múltiplos municípios brasileiros.
