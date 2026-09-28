@@ -1,0 +1,149 @@
+{
+  "modelo_previsao_commit": "07eb3e3",
+  "n_teste": 16988,
+  "por_ano": {
+    "2024": {
+      "A": {
+        "R2": 0.2474,
+        "R2_log": 0.8892,
+        "MAE": 546.55,
+        "soma_real": 6438048,
+        "soma_prevista": 2889338
+      },
+      "B": {
+        "R2": 0.3007,
+        "R2_log": 0.8998,
+        "MAE": 506.27,
+        "soma_real": 6438048,
+        "soma_prevista": 3315869
+      },
+      "C": {
+        "R2": 0.3123,
+        "R2_log": 0.9033,
+        "MAE": 505.46,
+        "soma_real": 6438048,
+        "soma_prevista": 3453224
+      },
+      "persistencia": {
+        "R2": 0.6598,
+        "R2_log": 0.8392,
+        "MAE": 530.86,
+        "soma_real": 6438048,
+        "soma_prevista": 6560720
+      },
+      "razao_prevista_real_top5pct": {
+        "A": 0.285,
+        "B": 0.348,
+        "C": 0.363,
+        "persistencia": 0.898
+      }
+    },
+    "2025": {
+      "A": {
+        "R2": 0.6922,
+        "R2_log": 0.885,
+        "MAE": 81.2,
+        "soma_real": 1542304,
+        "soma_prevista": 1213635
+      },
+      "B": {
+        "R2": 0.7594,
+        "R2_log": 0.8891,
+        "MAE": 76.46,
+        "soma_real": 1542304,
+        "soma_prevista": 1345166
+      },
+      "C": {
+        "R2": 0.7731,
+        "R2_log": 0.8911,
+        "MAE": 75.96,
+        "soma_real": 1542304,
+        "soma_prevista": 1377169
+      },
+      "persistencia": {
+        "R2": 0.7138,
+        "R2_log": 0.8337,
+        "MAE": 107.46,
+        "soma_real": 1542304,
+        "soma_prevista": 1639899
+      },
+      "razao_prevista_real_top5pct": {
+        "A": 0.68,
+        "B": 0.795,
+        "C": 0.814,
+        "persistencia": 0.983
+      }
+    },
+    "2026": {
+      "A": {
+        "R2": 0.8475,
+        "R2_log": 0.6051,
+        "MAE": 51.19,
+        "soma_real": 339251,
+        "soma_prevista": 315391
+      },
+      "B": {
+        "R2": 0.8686,
+        "R2_log": 0.6219,
+        "MAE": 49.59,
+        "soma_real": 339251,
+        "soma_prevista": 326325
+      },
+      "C": {
+        "R2": 0.8621,
+        "R2_log": 0.6199,
+        "MAE": 50.52,
+        "soma_real": 339251,
+        "soma_prevista": 328558
+      },
+      "persistencia": {
+        "R2": 0.7634,
+        "R2_log": 0.5353,
+        "MAE": 56.07,
+        "soma_real": 339251,
+        "soma_prevista": 320316
+      },
+      "razao_prevista_real_top5pct": {
+        "A": 0.772,
+        "B": 0.82,
+        "C": 0.827,
+        "persistencia": 0.869
+      }
+    }
+  },
+  "distrito_federal": {
+    "n_semanas": 124,
+    "A": {
+      "R2": 0.3326,
+      "R2_log": 0.7219,
+      "MAE": 1304.23,
+      "soma_real": 255777,
+      "soma_prevista": 105467
+    },
+    "B": {
+      "R2": 0.4843,
+      "R2_log": 0.7609,
+      "MAE": 1180.21,
+      "soma_real": 255777,
+      "soma_prevista": 135253
+    },
+    "C": {
+      "R2": 0.4662,
+      "R2_log": 0.7893,
+      "MAE": 1205.47,
+      "soma_real": 255777,
+      "soma_prevista": 155236
+    },
+    "persistencia": {
+      "R2": 0.6468,
+      "R2_log": 0.8257,
+      "MAE": 1127.13,
+      "soma_real": 255777,
+      "soma_prevista": 290997
+    }
+  },
+  "mesorregioes_C_melhor_que_A_R2_log": 103,
+  "mesorregioes_total": 137,
+  "ufs_C_melhor_que_A_R2_log": 22,
+  "ufs_total": 27
+}
