@@ -1,6 +1,7 @@
 # Rastreabilidade dos números da monografia
 
-Cada número do texto sai de um arquivo versionado. Os caminhos abaixo são relativos
+Cada número do texto sai de um arquivo versionado ou, quando indicado, da saída de um
+comando reproduzível. Os caminhos abaixo são relativos
 ao repositório [MODELO-PREVISAO](https://github.com/modelo-previsao-dengue/MODELO-PREVISAO),
 no commit **`07eb3e3`** (branch `feat/retreino-na-main`, PR #2), exceto quando indicado
 `monografia/`, que é este repositório.
@@ -18,16 +19,16 @@ Para regenerar os relatórios da pipeline (scripts 20–33): `scripts/rodar_v3.s
 | Número no texto | Fonte |
 |---|---|
 | 5.570 municípios, 137 mesorregiões, 700 estações, 1–31 estações por mesorregião (mediana 4) | `data/model_ready_v3/20_mapping_report.json` |
-| Soma das notificações por mesorregião = Gold, 2018–2026 | log do script 21 (`scripts/21_aggregate_sinan_mesorregiao.py`, validação por ano) |
+| Soma das notificações por mesorregião = Gold, 2018–2026 | `data/model_ready_v3/21_sinan_meso_report.json` (`notificacoes_por_ano`); a comparação com o Gold é a validação impressa por `python scripts/21_aggregate_sinan_mesorregiao.py` |
 | Cobertura climática 90,1% e por ano (80,0% a 97,8%) | `data/model_ready_v3/23_integration_report.json` |
-| 4.031 fragmentos de virada de ano no INMET | log de `scripts/inmet_weekly_aggregate.py --years 2018-2026` |
+| 4.031 fragmentos de virada de ano no INMET | saída de `python scripts/inmet_weekly_aggregate.py --years 2018-2026` (linha "parciais -> semanas-estacao"); não há arquivo versionado com esse número |
 | 60.554 linhas, 442 semanas por mesorregião | `data/model_ready_v3/24_lags_report.json`; verificação `check_contiguous` do script 24 |
 | Treino 28.633 / validação 7.261 / teste 16.988 linhas; cobertura 89,4% / 92,7% / 89,4% | `data/model_ready_v3/26_splits_v3_report.json` |
 | 266 atributos (110 SINAN, 12 brutos, 96 defasagens, 24 médias, 24 anomalias) | `data/model_ready_v3/26_splits_v3_report.json`, `feature_schema_v3.csv` |
 | Classes de risco: 52,9% baixo, 12,1% muito alto (série completa) | `data/model_ready_v3/26_splits_v3_report.json` (`classes`) |
 | Climatologia das anomalias 2019–2022 | `data/model_ready_v3/25_anomalias_report.json` |
 | Hiperparâmetros do XGBoost | `scripts/27_train_regression_v3.py` (`XGB_PARAMS`) |
-| 2024 ≈ 6,5 milhões; 2019 ≈ 2,3 milhões de notificações | log do script 21 (totais Gold por ano) |
+| 2024 ≈ 6,5 milhões; 2019 ≈ 2,3 milhões de notificações | `data/model_ready_v3/21_sinan_meso_report.json` (`notificacoes_por_ano`) |
 
 ## Resultados (Capítulo 4)
 

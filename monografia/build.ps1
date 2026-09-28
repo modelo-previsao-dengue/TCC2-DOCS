@@ -26,6 +26,8 @@ if ($avisos) {
 }
 
 if ($codigo -ne 0) {
-    Write-Error "latexmk terminou com codigo $codigo (veja build/tcc.log)"
+    Write-Host "latexmk terminou com codigo $codigo (veja build/tcc.log)" -ForegroundColor Red
+    exit $codigo
 }
 Write-Host "PDF gerado: $PSScriptRoot\TCC2.pdf"
+exit 0

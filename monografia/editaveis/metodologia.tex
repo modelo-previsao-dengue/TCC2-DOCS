@@ -100,7 +100,7 @@ O conjunto de teste inclui 2024, ano da maior epidemia de dengue registrada no B
 Foram construídos 266 atributos, organizados em cinco grupos:
 
 \begin{itemize}
-    \item \textbf{Epidemiológicos (110):} as contagens, proporções e índices clínicos da semana $t$ descritos na Seção~ef{sec:sinan}; defasagens das notificações de 1 a 8 semanas; médias das defasagens nas janelas de 2 a 4 e de 4 a 8 semanas; diferença e variação percentual em relação à semana anterior; e a codificação cíclica da semana do ano (seno e cosseno). A contagem de notificações da própria semana $t$ não foi incluída como atributo, embora a de casos confirmados ou prováveis e as defasagens a partir de $t-1$ o sejam.
+    \item \textbf{Epidemiológicos (110):} as contagens, proporções e índices clínicos da semana $t$ descritos na Seção~\ref{sec:sinan}; defasagens das notificações de 1 a 8 semanas; médias das defasagens nas janelas de 2 a 4 e de 4 a 8 semanas; diferença e variação percentual em relação à semana anterior; e a codificação cíclica da semana do ano (seno e cosseno). A contagem de notificações da própria semana $t$ não foi incluída como atributo, embora a de casos confirmados ou prováveis e as defasagens a partir de $t-1$ o sejam.
     \item \textbf{Climáticos brutos (12):} as doze variáveis semanais da semana $t$.
     \item \textbf{Defasagens climáticas (96):} as doze variáveis defasadas de 1 a 8 semanas.
     \item \textbf{Médias móveis biológicas (24):} médias das defasagens de cada variável nas janelas de 2 a 4 semanas (desenvolvimento do vetor) e de 4 a 8 semanas (ciclo completo com incubação), conforme a Figura~\ref{fig:defasagens_temporais}.
@@ -156,7 +156,7 @@ Na prática, as notificações das semanas mais recentes chegam com atraso ao si
 \begin{itemize}
     \item \textbf{Atraso de 4 semanas:} removidas as defasagens de 1 a 4 semanas, a diferença, a variação percentual e a média móvel de 2 a 4 semanas das notificações;
     \item \textbf{Atraso de 8 semanas:} além das anteriores, as defasagens de 5 a 8 semanas e a média de 4 a 8 semanas;
-    \item \textbf{Só clima:} removidos todos os 110 atributos epidemiológicos, restando o clima e a sazonalidade.
+    \item \textbf{Só clima:} removidos todos os 110 atributos epidemiológicos, inclusive a codificação da semana do ano, restando apenas os 156 atributos climáticos.
 \end{itemize}
 
 Os cenários de atraso não removem as contagens agregadas da semana $t$ (por exemplo, casos confirmados ou prováveis), que também estariam sujeitas a atraso em uma aplicação real. Eles representam, portanto, uma simulação otimista da perda de informação.
