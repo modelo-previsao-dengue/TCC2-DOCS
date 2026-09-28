@@ -1,0 +1,36 @@
+\chapter{Sistema de Previsão e Alerta}
+\label{cap:sistema}
+
+Para que as previsões possam apoiar decisões de vigilância, os resultados foram disponibilizados por meio de três componentes, todos no repositório MODELO-PREVISAO \cite{modeloprevisao2026}: uma API REST, um painel interativo em Streamlit e um painel estático em HTML. Este capítulo descreve cada um deles e o seu estado em relação aos resultados apresentados no Capítulo~\ref{cap:resultados}.
+
+\section{API REST}
+
+A API foi desenvolvida com FastAPI \cite{fastapi2024} e carrega, na inicialização, os modelos de regressão e de classificação e o conjunto de dados de teste. Os endpoints disponíveis estão na Tabela~\ref{tab:endpoints}. A documentação interativa é gerada automaticamente no padrão OpenAPI.
+
+\begin{table}[htb]
+\centering
+\caption{Endpoints da API de previsão}
+\label{tab:endpoints}
+\small
+\begin{tabular}{|p{0.30\textwidth}|p{0.62\textwidth}|}
+\hline
+\textbf{Endpoint} & \textbf{Descrição} \\ \hline
+\texttt{GET /health} & Estado do serviço e dos modelos carregados \\ \hline
+\texttt{GET /predict/\{municipio\}} & Previsão de notificações em $t+4$ e nível de risco para as semanas de um município (código IBGE) \\ \hline
+\texttt{GET /alerts} & Lista de municípios e semanas com nível de risco igual ou superior a um mínimo informado, ordenada pela previsão \\ \hline
+\texttt{GET /municipios} & Estatísticas agregadas por município, com filtro por UF \\ \hline
+\end{tabular}
+\fonte{Elaboração própria.}
+\end{table}
+
+\section{Painel Interativo}
+
+O painel em Streamlit \cite{streamlit2024} permite filtrar por UF e ano e apresenta as métricas do modelo, a lista de alertas de surto, a série temporal observada e prevista de cada município, a distribuição dos níveis de risco, o desempenho por UF e um explorador dos dados.
+
+\section{Painel Estático de Resultados}
+
+O painel DengueCast é uma página HTML autocontida, gerada por um script a partir dos relatórios da pipeline mesorregional, que dispensa servidor e pode ser aberta em qualquer navegador. Ele reúne um painel de alertas, o panorama nacional com a série de notificações observadas e previstas e o número de mesorregiões em alerta por semana, a análise regional, as séries e a linha do tempo de risco por mesorregião, a importância das variáveis climáticas pelo SHAP e uma seção explicativa sobre o modelo, as fontes de dados e as classes de risco.
+
+\section{Estado Atual e Integração com os Resultados}
+
+Os três componentes foram desenvolvidos em etapas diferentes do projeto. A API e o painel em Streamlit servem o modelo nacional em nível municipal, treinado antes das correções de dados descritas na Seção~\ref{sec:correcoes}; o painel DengueCast já utiliza a pipeline mesorregional, mas foi gerado antes do seu reprocessamento. Para que os sistemas reflitam os resultados deste trabalho, é necessário regenerar o painel estático a partir dos relatórios atuais e adaptar a API e o painel interativo ao modelo mesorregional, com a entrada por código de mesorregião. Com base nos resultados da Seção~\ref{sec:res_risco}, recomenda-se ainda que os alertas sejam derivados da previsão numérica, aplicando os limiares de risco à regressão, e apresentados junto à persistência, que se mostrou a referência mais forte para a classificação de risco.

@@ -1,0 +1,39 @@
+\chapter{Conclusão}
+\label{cap:conclusao}
+
+Este trabalho desenvolveu e avaliou um modelo de previsão semanal de notificações de dengue para as 137 mesorregiões brasileiras, com quatro semanas de antecedência, a partir da integração dos microdados do SINAN com os dados das estações automáticas do INMET. Partindo da proposta do TCC~1, restrita ao Distrito Federal, o escopo foi ampliado para todo o país, e o processo revelou que a qualidade dos dados de entrada e a escolha da referência de comparação são tão determinantes para as conclusões quanto o próprio modelo.
+
+\section{Respostas à Pergunta de Pesquisa}
+
+O XGBoost mostrou-se capaz de acompanhar a dinâmica da dengue nas mesorregiões brasileiras: em escala logarítmica, explicou 87\% da variância das notificações quatro semanas à frente, acima de todos os previsores ingênuos, e, nos anos típicos do período de teste (2025 e 2026), superou a persistência também em escala original e em erro absoluto. Diante do evento extremo de 2024, contudo, o modelo antecipou o momento da epidemia, mas previu pouco mais da metade das notificações ocorridas, e a persistência foi superior na escala em que o planejamento dos serviços de saúde é feito. A limitação decorre de propriedades conhecidas do método: árvores de decisão não extrapolam além da faixa de valores vista no treino, e o treino em escala logarítmica favorece o erro relativo sobre o absoluto.
+
+As variáveis climáticas acrescentaram informação de forma pequena, mas consistente: o ganho foi estatisticamente significativo no teste, esteve presente em todas as janelas da validação \textit{walk-forward} e na maioria das UFs e mesorregiões, e se manteve quando os dados epidemiológicos recentes foram removidos. Sozinho, o clima explicou 39\% da variância em escala logarítmica. As variáveis mais utilizadas pelo modelo foram a temperatura e a chuva na janela de duas a quatro semanas, com limiares coerentes com a biologia do vetor.
+
+Para a geração de alertas, a persistência superou os classificadores treinados especificamente para o nível de risco, tanto na definição por percentis quanto na definição por canal endêmico. Alertas derivados da previsão numérica mostraram-se mais adequados do que um classificador dedicado.
+
+\section{Contribuições}
+
+Além dos resultados de previsão, o trabalho contribui com um pipeline nacional, reprodutível e versionado de integração SINAN--INMET em nível de mesorregião, e com a documentação de defeitos que afetam análises baseadas nos arquivos públicos dessas bases: o deslocamento no mapeamento das colunas do INMET, os zeros falsos de precipitação, as semanas partidas na virada do ano e a ausência de anos inteiros. A medição do efeito de cada correção mostrou que uma associação entre ``umidade'' e dengue, observada em versões preliminares da análise, era um artefato de dados, e que duas conclusões sobre o papel do clima se invertiam após a correção. O trabalho também reforça uma recomendação metodológica: modelos de previsão epidemiológica devem ser comparados a previsores ingênuos e avaliados separadamente em anos típicos e em eventos extremos.
+
+\section{Limitações}
+
+\begin{itemize}
+    \item \textbf{Período de avaliação curto:} o treino cobre quatro anos e o teste três, um deles incompleto; a instabilidade entre anos na validação \textit{walk-forward} indica que as estimativas de desempenho dependem das temporadas avaliadas.
+    \item \textbf{Evento fora da distribuição:} a epidemia de 2024 não tem precedente no treino, e o modelo não foi capaz de prever a sua magnitude.
+    \item \textbf{Atributos da semana corrente:} a contagem de notificações da semana $t$, usada pela persistência, não foi incluída como atributo, e os cenários de atraso na notificação mantiveram contagens agregadas da semana corrente, o que torna a simulação otimista.
+    \item \textbf{Cobertura e representatividade climática:} a cobertura variou entre 80\% e 98\% conforme o ano, e o clima de cada mesorregião é a média das estações nela localizadas, que podem não representar toda a sua extensão.
+    \item \textbf{Qualidade das notificações:} o SINAN está sujeito a subnotificação e a mudanças na prática de notificação entre regiões e anos, e os dados dos anos mais recentes ainda podem ser revisados.
+    \item \textbf{Hiperparâmetros fixos:} as variantes do modelo compartilharam os mesmos hiperparâmetros, escolha que favorece a comparação entre conjuntos de atributos, mas não explora o melhor desempenho de cada variante.
+    \item \textbf{Sistemas desatualizados:} a API e os painéis ainda não refletem o modelo reprocessado.
+\end{itemize}
+
+\section{Trabalhos Futuros}
+
+\begin{itemize}
+    \item Tratar a subestimação de eventos extremos com funções objetivo adequadas a contagens (Poisson ou Tweedie), com a previsão da incidência relativa em vez da contagem absoluta, ou com modelos híbridos que combinem o XGBoost com a persistência.
+    \item Incluir a contagem da semana corrente entre os atributos e refazer os cenários de atraso removendo todas as informações da semana $t$.
+    \item Comparar com modelos estatísticos (SARIMA e SARIMAX) e de aprendizado profundo (LSTM) sob o mesmo protocolo e os mesmos baselines.
+    \item Produzir intervalos de previsão, por meio de regressão quantílica, para expressar a incerteza dos alertas.
+    \item Avaliar fontes climáticas complementares, como produtos de satélite e reanálise, para reduzir as lacunas de cobertura.
+    \item Atualizar a API e os painéis para o modelo mesorregional, com alertas derivados da regressão, e automatizar a atualização semanal dos dados.
+\end{itemize}

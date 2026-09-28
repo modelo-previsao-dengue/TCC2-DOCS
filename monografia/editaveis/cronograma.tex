@@ -1,37 +1,42 @@
 \chapter{Cronograma}
 \label{cap:cronograma}
 
-Este capítulo apresenta o planejamento temporal das atividades desenvolvidas no TCC 1 e planejadas para o TCC 2, organizadas em fases sequenciais ao longo dos semestres letivos.
-\newpage
+Este capítulo registra a distribuição temporal das atividades desenvolvidas no TCC~1 e no TCC~2.
+
 \section{Cronograma do TCC 1}
 
-O TCC 1, desenvolvido no período de setembro a dezembro de 2025, concentrou-se na fundamentação teórica, coleta e análise exploratória dos dados. A Figura~\ref{fig:cronograma_tcc1} apresenta a distribuição temporal das atividades executadas, organizadas em cinco fases principais: (1) Planejamento da Pesquisa, (2) Coleta de Dados e Análise dos Dados, (3) Metodologia e (4) Relatório.
+O TCC~1, desenvolvido de setembro a dezembro de 2025, concentrou-se na fundamentação teórica, na coleta e na análise exploratória dos dados do Distrito Federal. A Figura~\ref{fig:cronograma_tcc1} apresenta a distribuição das atividades, organizadas em quatro fases: planejamento da pesquisa, coleta e análise dos dados, metodologia e relatório.
 
 \begin{figure}[htb]
 	\centering
 	\caption{Cronograma executado no TCC 1 (setembro a dezembro de 2025)}
-	\includegraphics[width=18cm]{figuras/Cronograma_TCC1_2025-1.png}
+	\includegraphics[width=\textwidth]{figuras/Cronograma_TCC1_2025-1.png}
 	\label{fig:cronograma_tcc1}
-	\fonte{Elaborado pelo autor.}
+	\fonte{Elaborado pelos autores.}
 \end{figure}
 
-As atividades realizadas incluíram a revisão bibliográfica sobre epidemiologia da dengue e modelos preditivos, a identificação e caracterização das bases de dados (SINAN e INMET), o desenvolvimento do pipeline de engenharia de dados com scripts de coleta automatizada, a análise estatística exploratória com cálculo de correlações e testes de causalidade de Granger, e a redação dos capítulos iniciais do trabalho.
+\section{Cronograma Executado no TCC 2}
 
-\newpage
-\section{Cronograma do TCC 2}
+O TCC~2 havia sido planejado para o período de janeiro a março de 2026, com foco na comparação de diversas famílias de modelos para o Distrito Federal. A ampliação do escopo para o território nacional e a auditoria de qualidade dos dados estenderam a execução até setembro de 2026. A Tabela~\ref{tab:cronograma_tcc2} resume as atividades efetivamente realizadas, com as datas registradas no histórico de versões dos repositórios do projeto.
 
-O TCC 2, planejado para o período de janeiro a março de 2026, focará no desenvolvimento, treinamento e validação dos modelos preditivos, além da implementação de um sistema de alerta automatizado. A Figura~\ref{fig:cronograma_tcc2} apresenta a distribuição temporal das atividades previstas, organizadas em seis fases: (1) Planejamento, (2) Tratamento de Daddos, (3) Analise de Dados, (4) Treinamento dos Modelos, (5) Desenvolvimento do Sistema de Alerta, e (6) Escrita do Relatório.
-
-\begin{figure}[htb]
-	\centering
-	\caption{Cronograma planejado para o TCC 2 (janeiro a março de 2026)}
-	\includegraphics[width=18cm]{figuras/Cronograma_TCC2_2026-1.png}
-	\label{fig:cronograma_tcc2}
-	\fonte{Elaborado pelo autor.}
-\end{figure}
-
-As atividades planejadas incluem a engenharia de atributos com criação de lags temporais e variáveis derivadas, a implementação de modelos estatísticos (SARIMA/SARIMAX e Prophet) como baseline, o desenvolvimento de modelos de machine learning (Random Forest e XGBoost) com otimização de hiperparâmetros, a implementação de arquiteturas de deep learning (LSTM, BiLSTM e CNN-LSTM), a validação rigorosa com walk-forward validation e comparação estatística entre modelos, e a redação final do trabalho com preparação da defesa.
+\begin{table}[htb]
+\centering
+\caption{Atividades executadas no TCC 2}
+\label{tab:cronograma_tcc2}
+\small
+\begin{tabular}{|p{0.18\textwidth}|p{0.74\textwidth}|}
+\hline
+\textbf{Período} & \textbf{Atividades} \\ \hline
+Mar. 2026 & Criação dos repositórios do TCC 2; notebooks de estudo de XGBoost e SARIMA \\ \hline
+Abr. 2026 & Seleção de atributos climáticos por clusterização; integração do SINAN no recorte do Distrito Federal \\ \hline
+Mai. 2026 & Pipeline nacional do SINAN (Bronze, Silver e Gold); pipeline do INMET e mapeamento estação--município; primeiros modelos XGBoost, SHAP e validação \textit{walk-forward} \\ \hline
+Jun. 2026 & Reorganização dos repositórios; notebooks de treino no Colab e no Kaggle \\ \hline
+Jul. 2026 & Modelo nacional em nível municipal, API REST e painel interativo \\ \hline
+Set. 2026 & Pipeline com recorte de cinco anos; auditoria e correção dos dados do INMET e do SINAN; retreino com baselines; pipeline mesorregional; reprocessamento sobre os dados corrigidos; redação da monografia \\ \hline
+\end{tabular}
+\fonte{Elaborado pelos autores a partir do histórico dos repositórios.}
+\end{table}
 
 \section{Considerações sobre o Planejamento}
 
-O projeto está distribuído entre dois semestres letivos. O TCC 1 estabeleceu a base conceitual e metodológica do trabalho, enquanto o TCC 2 dedicar-se-á à implementação prática e avaliação dos modelos. As Figuras~\ref{fig:cronograma_tcc1} e~\ref{fig:cronograma_tcc2} evidenciam a progressão lógica das atividades, respeitando as dependências metodológicas entre as etapas e considerando a carga horária acadêmica do estudante.
+A principal diferença entre o planejado e o executado foi a ampliação do escopo, do Distrito Federal para todo o país, e a consequente substituição da comparação entre várias famílias de modelos por uma avaliação mais aprofundada de um único modelo frente a previsores ingênuos. A auditoria dos dados, não prevista no planejamento inicial, consumiu parte relevante do período final, mas foi determinante para a validade dos resultados.
