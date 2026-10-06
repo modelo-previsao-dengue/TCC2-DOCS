@@ -1,0 +1,174 @@
+\chapter{Metodologia}
+\label{cap:metodologia}
+
+Este capítulo descreve o que foi realizado no TCC~2: as bases de dados utilizadas, o pipeline de processamento, as correções de qualidade identificadas durante a execução, a construção da série de modelagem e dos atributos, os modelos e os previsores de referência, e o protocolo de avaliação. Todo o código está versionado no repositório MODELO-PREVISAO \cite{modeloprevisao2026}, e a pipeline de modelagem é executada de ponta a ponta por um único comando (\texttt{scripts/rodar\_v3.sh}), com a divisão temporal definida em um arquivo de configuração (\texttt{config/recorte.json}).
+
+\section{Visão Geral}
+
+O problema foi formulado como regressão: prever, para cada uma das 137 mesorregiões brasileiras e cada semana epidemiológica $t$, o número de notificações de dengue na semana $t+4$, isto é, com quatro semanas de antecedência. A Tabela~\ref{tab:etapas_pipeline} resume as etapas, que seguem a arquitetura em medalhão descrita no Capítulo~\ref{cap:referencial}.
+
+\begin{table}[htb]
+\centering
+\caption{Etapas do pipeline de dados e de modelagem}
+\label{tab:etapas_pipeline}
+\small
+\begin{tabular}{|p{0.30\textwidth}|p{0.62\textwidth}|}
+\hline
+\textbf{Etapa} & \textbf{Descrição} \\ \hline
+SINAN (Bronze, Silver, Gold) & Microdados anuais do OpenDataSUS agregados por município e semana de notificação, em grade densa \\ \hline
+INMET (Bronze, Silver) & Dados horários das estações automáticas padronizados e agregados por estação e semana epidemiológica \\ \hline
+Mapeamento geográfico & Municípios e estações associados às 137 mesorregiões do IBGE \\ \hline
+Agregação mesorregional & SINAN somado e INMET promediado por mesorregião e semana \\ \hline
+Integração & União das duas bases pela chave mesorregião, ano e semana \\ \hline
+Atributos & Defasagens, médias móveis e anomalias climáticas \\ \hline
+Divisão temporal & Treino, validação e teste por ano, com alvo em $t+4$ \\ \hline
+Modelagem e avaliação & Três variantes de XGBoost, baselines, \textit{data blindness}, classificação de risco, SHAP e \textit{walk-forward} \\ \hline
+\end{tabular}
+\fonte{Elaboração própria.}
+\end{table}
+
+\section{Bases de Dados}
+
+\subsection{SINAN}
+\label{sec:sinan}
+
+Os dados epidemiológicos são os microdados de notificação de dengue do SINAN disponibilizados no OpenDataSUS \cite{sinan2025}, com um arquivo por ano de 2000 a 2026. A métrica central é o número de \textbf{notificações} por semana epidemiológica de notificação. A semana foi derivada, em ordem de prioridade, dos campos \texttt{SEM\_NOT}, \texttt{DT\_NOTIFIC}, \texttt{SEM\_PRI} e \texttt{DT\_SIN\_PRI}, sendo os dois últimos utilizados apenas como alternativa controlada. O município de referência é o de residência, com códigos de seis dígitos reconciliados ao código IBGE de sete dígitos. Registros sem semana válida ou sem município reconciliável foram descartados e documentados em relatórios de exceção.
+
+Além da contagem de notificações, foram agregadas por município e semana contagens de hospitalizações, óbitos, casos confirmados ou prováveis, descartados, inconclusivos, casos com sinais de alarme e graves, além de proporções de sintomas, comorbidades, critérios de confirmação e perfil demográfico, e índices clínicos compostos. A camada Gold completa a série em grade densa: semanas sem notificação permanecem na base com contagem zero.
+
+\subsection{INMET}
+
+Os dados climáticos são os arquivos anuais do Banco de Dados Meteorológicos (BDMEP) do INMET \cite{inmet2025}, com medições horárias de cerca de 700 estações automáticas. Foram utilizadas doze variáveis semanais por estação: precipitação acumulada e média, número de dias com chuva e de dias com chuva intensa (ao menos 10~mm), temperaturas média, mínima e máxima e amplitude térmica, umidade relativa média, pressão atmosférica média, velocidade média do vento e radiação média. A agregação semanal utiliza soma para a precipitação e média para as demais variáveis, e as semanas com menos da metade das horas válidas são sinalizadas como de baixa cobertura.
+
+\subsection{Referência Geográfica}
+
+A tabela oficial de municípios do IBGE forneceu os códigos, as coordenadas e a hierarquia município--mesorregião--UF \cite{ibge1990mesorregioes}. Cada estação do INMET foi associada ao município mais próximo, por distância geodésica (haversine), e, por meio dele, à sua mesorregião. As 700 estações cobriram as 137 mesorregiões, com entre 1 e 31 estações por mesorregião (mediana de 4).
+
+\section{Agregação Mesorregional e Integração}
+
+A série epidemiológica de cada mesorregião é a \textbf{soma} das contagens dos seus municípios; as proporções e os índices clínicos foram agregados por média ponderada pelo número de notificações. A série climática de cada mesorregião é a \textbf{média} das estações nela localizadas. A soma das notificações por mesorregião foi conferida contra o total da camada Gold em cada ano, com diferença nula em todos os anos de 2018 a 2026.
+
+As duas séries foram unidas pela chave (mesorregião, ano epidemiológico, semana epidemiológica), mantendo todas as semanas epidemiológicas e deixando ausentes as variáveis climáticas das semanas sem estação ativa. A cobertura climática resultante foi de 90,1\% das mesorregião-semanas, variando de 80,0\% (2026) a 97,8\% (2019) entre os anos, como detalhado no Capítulo~\ref{cap:resultados}.
+
+\section{Auditoria e Correção da Qualidade dos Dados}
+\label{sec:correcoes}
+
+Versões anteriores da análise produziram resultados que não se sustentaram após uma auditoria sistemática dos dados. Os defeitos encontrados e as correções aplicadas estão resumidos na Tabela~\ref{tab:correcoes}. Cada correção foi implementada no pipeline, acompanhada de uma verificação automática que impede a regressão do defeito.
+
+\begin{table}[htb]
+\centering
+\caption{Defeitos de dados identificados e correções aplicadas}
+\label{tab:correcoes}
+\small
+\begin{tabular}{|p{0.27\textwidth}|p{0.36\textwidth}|p{0.29\textwidth}|}
+\hline
+\textbf{Defeito} & \textbf{Efeito} & \textbf{Correção} \\ \hline
+Mapeamento posicional das colunas do INMET & Deslocamento de uma posição em 9 de 17 variáveis: a ``umidade'' era a temperatura mínima do ponto de orvalho; temperaturas mínima e máxima trocadas; vento correspondia à rajada & Mapeamento pelo nome do cabeçalho, com validação de faixas físicas \\ \hline
+Zeros falsos de precipitação & Semanas sem nenhuma medição registradas como ``sem chuva'' & Contagem de horas válidas por variável; ausência mantida como ausente \\ \hline
+Semanas partidas na virada do ano & A semana que cruza 31 de dezembro aparecia em dois arquivos anuais, e um dos fragmentos era descartado (4.031 fragmentos no INMET) & Agregação em dois estágios, com soma dos fragmentos \\ \hline
+Anos 2020 e 2022 ausentes & Arquivos do INMET fora do inventário por diferença de nome; as defasagens por deslocamento cruzavam a lacuna, e ``uma semana atrás'' passava a ser a última semana de dois anos antes & Inventário corrigido, série de anos contíguos e verificação que aborta a execução se a série não for densa \\ \hline
+Rótulo de risco com vazamento & Percentis de risco calculados sobre toda a série, incluindo o teste & Percentis calculados apenas no treino \\ \hline
+Climatologia das anomalias com vazamento & Média e desvio históricos calculados incluindo validação e teste & Climatologia apenas dos anos de treino \\ \hline
+\end{tabular}
+\fonte{Elaboração própria.}
+\end{table}
+
+O primeiro defeito tem consequência direta sobre a interpretação: em versões anteriores, a variável tratada como umidade relativa aparecia entre as climáticas mais associadas aos casos e produzia um limiar de ``15,7\% de umidade'', valor fisicamente implausível para médias semanais. Esse limiar era, na verdade, uma temperatura de ponto de orvalho em graus Celsius. Após a correção, a variável deixou de se destacar, como mostrado no Capítulo~\ref{cap:resultados}.
+
+\section{Série de Modelagem e Divisão Temporal}
+
+A série final contém as 137 mesorregiões em 442 semanas contíguas, de 2018 a 2026, totalizando 60.554 linhas. O ano de 2018 foi utilizado apenas para o aquecimento das defasagens, e as últimas semanas de 2026, sem alvo disponível em $t+4$, foram descartadas. A divisão foi feita por ano epidemiológico (Tabela~\ref{tab:divisao_temporal}); a validação foi utilizada para a parada antecipada do treinamento, e o teste não foi utilizado em nenhuma decisão de modelagem.
+
+\begin{table}[htb]
+\centering
+\caption{Divisão temporal da série de modelagem}
+\label{tab:divisao_temporal}
+\begin{tabular}{|l|c|r|c|}
+\hline
+\textbf{Conjunto} & \textbf{Anos} & \textbf{Linhas} & \textbf{Cobertura climática} \\ \hline
+Treino & 2019 a 2022 & 28.633 & 89,4\% \\ \hline
+Validação & 2023 & 7.261 & 92,7\% \\ \hline
+Teste & 2024 a 2026 & 16.988 & 89,4\% \\ \hline
+\end{tabular}
+\fonte{Elaboração própria.}
+\end{table}
+
+O conjunto de teste inclui 2024, ano da maior epidemia de dengue registrada no Brasil, com cerca de 6,5 milhões de notificações. Nenhum ano do treino chegou perto dessa magnitude: o maior deles, 2019, teve cerca de 2,3 milhões. O teste funciona, portanto, como o ``teste de estresse'' previsto no TCC~1: avalia o modelo em anos típicos (2025 e 2026) e em um evento fora da distribuição de treino (2024).
+
+\section{Engenharia de Atributos}
+
+Foram construídos 266 atributos, organizados em cinco grupos:
+
+\begin{itemize}
+    \item \textbf{Epidemiológicos (110):} as contagens, proporções e índices clínicos da semana $t$ descritos na Seção~\ref{sec:sinan}; defasagens das notificações de 1 a 8 semanas; médias das defasagens nas janelas de 2 a 4 e de 4 a 8 semanas; diferença e variação percentual em relação à semana anterior; e a codificação cíclica da semana do ano (seno e cosseno). A contagem de notificações da própria semana $t$ não foi incluída como atributo, embora a de casos confirmados ou prováveis e as defasagens a partir de $t-1$ o sejam.
+    \item \textbf{Climáticos brutos (12):} as doze variáveis semanais da semana $t$.
+    \item \textbf{Defasagens climáticas (96):} as doze variáveis defasadas de 1 a 8 semanas.
+    \item \textbf{Médias móveis biológicas (24):} médias das defasagens de cada variável nas janelas de 2 a 4 semanas (desenvolvimento do vetor) e de 4 a 8 semanas (ciclo completo com incubação), conforme a Figura~\ref{fig:defasagens_temporais}.
+    \item \textbf{Anomalias climáticas (24):} para cada variável, o desvio em relação à média histórica da mesma mesorregião e semana epidemiológica, em valor absoluto e padronizado pelo desvio-padrão. A climatologia foi calculada exclusivamente com os anos de treino (2019 a 2022).
+\end{itemize}
+
+\section{Variável Alvo e Classes de Risco}
+
+O alvo de regressão é a contagem de notificações da mesorregião na semana $t+4$. O modelo foi treinado sobre $\log(1+y)$, e as previsões foram revertidas por $e^{\hat{z}}-1$, limitadas a zero.
+
+Para a classificação, cada semana recebeu um de quatro níveis de risco (baixo, moderado, alto e muito alto), definidos pelos percentis 50, 75 e 90 das notificações em $t+4$ de cada mesorregião, calculados apenas no período de treino. Os mesmos limiares foram aplicados à validação e ao teste. Na série completa, 52,9\% das mesorregião-semanas ficaram no nível baixo e 12,1\% no nível muito alto.
+
+\section{Modelos}
+
+\subsection{XGBoost}
+
+Foram treinadas três variantes do XGBoost, que diferem apenas no conjunto de atributos:
+
+\begin{itemize}
+    \item \textbf{A (só SINAN):} os 110 atributos epidemiológicos;
+    \item \textbf{B (SINAN + INMET bruto):} A mais os 12 climáticos da semana $t$;
+    \item \textbf{C (SINAN + INMET enriquecido):} B mais as defasagens, médias móveis e anomalias climáticas (266 atributos).
+\end{itemize}
+
+Os hiperparâmetros foram fixados para as três variantes, de modo que a comparação isole o efeito dos atributos: até 1.000 árvores com profundidade máxima 8, taxa de aprendizado 0,05, subamostragem de 80\% das linhas e das colunas, regularização L1 de 0,1 e L2 de 1, peso mínimo por folha igual a 5, e parada antecipada após 50 iterações sem melhora na validação. A classificação de risco utilizou as mesmas configurações com a função objetivo multiclasse (\textit{softprob}) e pesos inversamente proporcionais à frequência de cada classe.
+
+\subsection{Previsores de Referência}
+
+Três previsores ingênuos foram avaliados no mesmo conjunto de teste e com as mesmas métricas:
+
+\begin{itemize}
+    \item \textbf{Persistência:} a previsão para $t+4$ é a contagem da semana $t$;
+    \item \textbf{Média móvel:} a média das contagens das semanas $t$ a $t-3$;
+    \item \textbf{Sazonal:} a contagem da mesma semana do ano anterior, isto é, da semana $t+4-52$.
+\end{itemize}
+
+Para a classificação, os mesmos limiares de risco do treino foram aplicados às previsões de cada baseline.
+
+\section{Protocolo de Avaliação}
+
+\subsection{Comparação no Conjunto de Teste}
+
+Os modelos e baselines foram comparados por $R^2$ nas escalas logarítmica e original, MAE e RMSE, e a classificação por F1 macro, F1 por classe e AUC. As diferenças entre as variantes do XGBoost foram testadas por teste $t$ pareado sobre os erros quadráticos em escala logarítmica. O desempenho foi também desagregado por ano de teste, por UF, por mesorregião e para o recorte do Distrito Federal.
+
+\subsection{Validação Walk-Forward}
+
+Para avaliar a estabilidade ao longo do tempo, as três variantes foram retreinadas em quatro janelas expansivas, cada uma testada no ano seguinte: treino de 2019 a 2022 e teste em 2023, e assim sucessivamente até o teste em 2026. As janelas começam após o período de treino porque as anomalias climáticas usam a climatologia de 2019 a 2022; testar anos desse período reintroduziria o vazamento. Em cada janela, as últimas dez semanas do treino foram usadas para a parada antecipada.
+
+\subsection{Simulação de Atraso na Notificação}
+
+Na prática, as notificações das semanas mais recentes chegam com atraso ao sistema de vigilância. Para medir o valor do clima nessa situação, foram definidos cenários de ``cegueira'' (\textit{data blindness}), em que atributos epidemiológicos recentes foram removidos do treino, da validação e do teste, e o modelo foi treinado com e sem as variáveis climáticas:
+
+\begin{itemize}
+    \item \textbf{Atraso de 4 semanas:} removidas as defasagens de 1 a 4 semanas, a diferença, a variação percentual e a média móvel de 2 a 4 semanas das notificações;
+    \item \textbf{Atraso de 8 semanas:} além das anteriores, as defasagens de 5 a 8 semanas e a média de 4 a 8 semanas;
+    \item \textbf{Só clima:} removidos todos os 110 atributos epidemiológicos, inclusive a codificação da semana do ano, restando apenas os 156 atributos climáticos.
+\end{itemize}
+
+Os cenários de atraso não removem as contagens agregadas da semana $t$ (por exemplo, casos confirmados ou prováveis), que também estariam sujeitas a atraso em uma aplicação real. Eles representam, portanto, uma simulação otimista da perda de informação.
+
+\subsection{Interpretação}
+
+Os valores SHAP do modelo C foram calculados com o TreeExplainer sobre todas as 16.988 linhas do teste. Para as variáveis climáticas mais importantes, o limiar foi estimado como o valor em que a contribuição média, calculada em 50 faixas da variável, muda de sinal.
+
+\section{Experimento Complementar: Recorte com Maior Cobertura}
+
+Em paralelo à pipeline mesorregional, foi conduzido um experimento controlado em um recorte de seis unidades federativas com maior cobertura climática (DF, ES, GO, MG, RJ e SP), de 2019 a 2023, no nível municipal e agregado por mesorregião e por UF, com teste em 2023. Esse experimento incluiu os mesmos três baselines, mediu a inflação das métricas causada pelo vazamento no rótulo de risco e avaliou uma definição binária de surto baseada no canal endêmico (média da semana epidemiológica em 2010 a 2018, e a variante com dois desvios-padrão) \cite{bortman1999canal}. Seus resultados são utilizados no Capítulo~\ref{cap:resultados} como verificação independente dos achados principais.
+
+\section{Reprodutibilidade}
+
+Os scripts do pipeline, a configuração da divisão temporal e os relatórios de cada etapa (em formato JSON) estão versionados no repositório MODELO-PREVISAO \cite{modeloprevisao2026}. Os números apresentados neste trabalho foram extraídos desses relatórios, e as figuras e medidas derivadas foram geradas por um script versionado junto ao texto, que registra o commit dos dados de origem. A correspondência entre cada número do texto e o arquivo que o produziu está documentada no arquivo \texttt{RASTREABILIDADE.md} do repositório da monografia.

@@ -1,0 +1,18 @@
+# Auxiliares da compilacao (latexmk grava tudo em build/)
+build/
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.idx
+*.out
+*-eps-converted-to.pdf
+
+# PDF gerado (build.ps1 copia para TCC2.pdf)
+*.pdf
