@@ -3,62 +3,97 @@
 Cada número do texto sai de um arquivo versionado ou, quando indicado, da saída de um
 comando reproduzível. Os caminhos abaixo são relativos
 ao repositório [MODELO-PREVISAO](https://github.com/modelo-previsao-dengue/MODELO-PREVISAO),
-no commit **`07eb3e3`** (branch `feat/retreino-na-main`, PR #2), exceto quando indicado
+no commit **`eb64c67`** (branch `main`, pipeline v4 completa), exceto quando indicado
 `monografia/`, que é este repositório.
 
-Para regenerar as figuras novas e `dados/fatos_derivados.json`:
+Para regenerar os relatórios da pipeline v4 (scripts 40–55):
 
 ```bash
-/caminho/para/MODELO-PREVISAO/.venv/bin/python scripts/gerar_figuras.py --modelo-previsao /caminho/para/MODELO-PREVISAO
+cd MODELO-PREVISAO
+source .venv/bin/activate
+for s in scripts/4*.py scripts/5*.py; do python "$s"; done
 ```
 
-Para regenerar os relatórios da pipeline (scripts 20–33): `scripts/rodar_v3.sh` no MODELO-PREVISAO.
+Os dados corrigidos estão disponíveis em:
+- HuggingFace: `pedrolucassantanaf/dengue-tcc2-data`
+- Kaggle: `pedrolucassantana` (notebooks públicos)
 
 ## Metodologia (Capítulo 3)
 
 | Número no texto | Fonte |
 |---|---|
-| 5.570 municípios, 137 mesorregiões, 700 estações, 1–31 estações por mesorregião (mediana 4) | `data/model_ready_v3/20_mapping_report.json` |
-| Soma das notificações por mesorregião = Gold, 2018–2026 | `data/model_ready_v3/21_sinan_meso_report.json` (`notificacoes_por_ano`); a comparação com o Gold é a validação impressa por `python scripts/21_aggregate_sinan_mesorregiao.py` |
-| Cobertura climática 90,1% e por ano (80,0% a 97,8%) | `data/model_ready_v3/23_integration_report.json` |
-| 4.031 fragmentos de virada de ano no INMET | saída de `python scripts/inmet_weekly_aggregate.py --years 2018-2026` (linha "parciais -> semanas-estacao"); não há arquivo versionado com esse número |
-| 60.554 linhas, 442 semanas por mesorregião | `data/model_ready_v3/24_lags_report.json`; verificação `check_contiguous` do script 24 |
-| Treino 28.633 / validação 7.261 / teste 16.988 linhas; cobertura 89,4% / 92,7% / 89,4% | `data/model_ready_v3/26_splits_v3_report.json` |
-| 266 atributos (110 SINAN, 12 brutos, 96 defasagens, 24 médias, 24 anomalias) | `data/model_ready_v3/26_splits_v3_report.json`, `feature_schema_v3.csv` |
-| Classes de risco: 52,9% baixo, 12,1% muito alto (série completa) | `data/model_ready_v3/26_splits_v3_report.json` (`classes`) |
-| Climatologia das anomalias 2019–2022 | `data/model_ready_v3/25_anomalias_report.json` |
-| Hiperparâmetros do XGBoost | `scripts/27_train_regression_v3.py` (`XGB_PARAMS`) |
-| 2024 ≈ 6,5 milhões; 2019 ≈ 2,3 milhões de notificações | `data/model_ready_v3/21_sinan_meso_report.json` (`notificacoes_por_ano`) |
+| 5.570 municípios, 137 mesorregiões, ~700 estações | `data/model_ready_v4/40_sinan_meso_report.json`, `41_inmet_meso_report.json` |
+| Cobertura climática e por ano | `data/model_ready_v4/42_integration_report.json` |
+| Linhas do dataset integrado, semanas por mesorregião | `data/model_ready_v4/43_lags_report.json` |
+| Treino / validação / teste splits | `data/model_ready_v4/45_splits_report.json` |
+| 266 atributos (110 SINAN, 12 brutos, 96 defasagens, 24 médias, 24 anomalias) | `data/model_ready_v4/45_splits_report.json` |
+| Classes de risco (distribuição) | `data/model_ready_v4/45_splits_report.json` |
+| Climatologia das anomalias | `data/model_ready_v4/44_anomalias_report.json` |
+| Hiperparâmetros do XGBoost | `scripts/46_train_regression_v4.py` (`XGB_PARAMS`) |
+| 2024 ≈ 6,5 milhões; 2019 ≈ 2,3 milhões de notificações | `data/model_ready_v4/40_sinan_meso_report.json` |
+| Correção do mapeamento de colunas INMET (header-name vs posicional) | `scripts/11_inmet_bronze_to_silver.py`, `data/model_ready_v4/41_inmet_meso_report.json` |
 
 ## Resultados (Capítulo 4)
 
 | Número no texto | Fonte |
 |---|---|
-| Tabela 5, coluna "Antes" | relatórios `data/model_ready_v3/2*_*.json` no commit `5721f8a` (main após o PR #1) |
-| Tabela 5, coluna "Depois" | relatórios `27`, `28`, `30` e `31` em `data/model_ready_v3/` |
-| Inflação do vazamento no rótulo (F1 +0,004 a +0,107; AUC +0,001 a +0,074) | `docs/inflacao_vazamento.csv` |
-| Tabela 6 (baselines e XGBoost no teste) | `models/baselines_v3/comparison.csv`, `data/model_ready_v3/33_baselines_v3_report.json` |
-| Tabela 7 (por ano), 36% e 90% no topo de 2024, previsto/real | `monografia/dados/fatos_derivados.json` (`por_ano`) |
-| Ganhos do clima e testes t (A×B, A×C, B×C) | `data/model_ready_v3/27_regression_v3_report.json` |
-| Tabela 8 (walk-forward) | `data/model_ready_v3/31_walkforward_v3_report.json` |
-| 22 de 27 UFs, 103 de 137 mesorregiões | `monografia/dados/fatos_derivados.json` |
-| Tabela 9 (data blindness) | `data/model_ready_v3/28_blindness_v3_report.json` |
-| SHAP (ordem, contribuições médias, 9 no top 30) e Tabela 10 (limiares) | `data/model_ready_v3/30_shap_v3_report.json` |
-| Tabela 11 (classificação) | `data/model_ready_v3/29_classification_v3_report.json` e `33_baselines_v3_report.json` |
-| Surto binário (0,72–0,74; 0,83; 0,85) | `docs/resultados_surto_binario.md` (variante `media`) |
-| Recorte do DF | `monografia/dados/fatos_derivados.json` (`distrito_federal`) |
-| Tabela 12 (experimento complementar) | `docs/resultados_modelos_e_baselines.md` |
+| 9 combinações (3 variantes × 3 conjuntos de atributos), R²_log, CI95, RMSE, MAE | `data/model_ready_v4/46_regression_v4_report.json` |
+| Walk-forward (4 janelas expansíveis, 36 modelos) | `data/model_ready_v4/47_walkforward_v4_report.json` |
+| SHAP (top 10 features por variante, 10.000 amostras) | `data/model_ready_v4/48_shap_report.json` |
+| Optuna (30 trials, baseline 0,851, best 0,853, não adotado) | `data/model_ready_v4/49_optuna_report.json` |
+| PSI drift (185 high, 73 moderate, 182 low) | `data/model_ready_v4/50_drift_report.json` |
+| Learning curve (5 janelas, 4 a 22 anos) | `data/model_ready_v4/51_learning_curve_report.json` |
+| Resultados finais compilados | `data/model_ready_v4/52_final_results_v4.json` |
+| Classificação (F1, AUC, accuracy por classe, 9 combos) | `data/model_ready_v4/54_classification_v4_report.json` |
+| Melhor modelo: série longa 22 anos + clima enriquecido, R²_log = 0,890 | `data/model_ready_v4/46_regression_v4_report.json` |
+| Série longa vs curta: +0,015 R²_log (p < 10⁻⁴⁶) | `data/model_ready_v4/46_regression_v4_report.json` |
+| Ganho do clima: +0,008 R²_log | `data/model_ready_v4/46_regression_v4_report.json` |
+| Classificação: F1 macro 0,48 → 0,58 (série longa) | `data/model_ready_v4/54_classification_v4_report.json` |
 
 ## Figuras
 
 | Figura | Origem |
 |---|---|
-| `fig_baselines_vs_xgboost.png`, `fig_serie_nacional_teste.png`, `fig_cobertura_inmet_ano.png` | `monografia/scripts/gerar_figuras.py` |
-| `fig_v3_regression_delta_mesorregiao.png` | `scripts/27_train_regression_v3.py` |
-| `fig_v3_blindness_comparison.png` | `scripts/28_train_blindness_v3.py` |
-| `fig_v3_shap_beeswarm.png` | `scripts/30_explain_shap_v3.py` |
+| `fig_v4_variante_comparison.png` | `scripts/53_generate_tcc_outputs.py` |
+| `fig_v4_r2_by_year.png` | `scripts/53_generate_tcc_outputs.py` |
+| `fig_v4_walkforward.png` | `scripts/53_generate_tcc_outputs.py` |
+| `fig_v4_learning_curve.png` | `scripts/53_generate_tcc_outputs.py` |
+| `fig_v4_data_drift_psi.png` | `scripts/53_generate_tcc_outputs.py` |
+| `fig_v4_shap_comparison.png` | `scripts/53_generate_tcc_outputs.py` |
+| `fig_v4_cls_f1_comparison.png` | `scripts/53_generate_tcc_outputs.py` |
+| `fig_v4_confusion_matrix.png` | `scripts/53_generate_tcc_outputs.py` |
+| `fig_v4_delta_mesorregiao_B_vs_A.png` | `scripts/53_generate_tcc_outputs.py` |
+| `fig_v4_gain_comparison.png` | `scripts/53_generate_tcc_outputs.py` |
+| `fig_v4_inmet_coverage.png` | `scripts/53_generate_tcc_outputs.py` |
 
-## Pendência
+## Tabelas geradas
 
-Quando o PR #2 do MODELO-PREVISAO for mergeado, atualizar o commit de referência
-acima para o commit de merge na `main`.
+| Tabela | Origem |
+|---|---|
+| `tabelas/tab_v4_regression_comparison.tex` | `scripts/53_generate_tcc_outputs.py` |
+| `tabelas/tab_v4_walkforward.tex` | `scripts/53_generate_tcc_outputs.py` |
+| `tabelas/tab_v4_classification.tex` | `scripts/53_generate_tcc_outputs.py` |
+| `tabelas/tab_v4_r2_by_year.tex` | `scripts/53_generate_tcc_outputs.py` |
+| `tabelas/tab_v4_r2_by_flag.tex` | `scripts/53_generate_tcc_outputs.py` |
+| `tabelas/tab_v4_statistical_tests.tex` | `scripts/53_generate_tcc_outputs.py` |
+
+## Scripts da pipeline v4
+
+| Script | Função |
+|---|---|
+| `scripts/40_aggregate_sinan_mesorregiao.py` | Agregação SINAN por mesorregião |
+| `scripts/41_inmet_mesorregiao.py` | Agregação INMET por mesorregião (mapeamento corrigido) |
+| `scripts/42_integrate_sinan_inmet.py` | Integração SINAN + INMET |
+| `scripts/43_create_lags.py` | Engenharia de atributos (defasagens, médias móveis) |
+| `scripts/44_create_anomalias.py` | Anomalias climáticas |
+| `scripts/45_split_data.py` | Divisão treino/validação/teste |
+| `scripts/46_train_regression_v4.py` | Treinamento regressão (9 combinações) |
+| `scripts/47_walkforward_v4.py` | Validação walk-forward (36 modelos) |
+| `scripts/48_explain_shap.py` | Interpretação SHAP |
+| `scripts/49_optuna_v4.py` | Otimização Optuna (30 trials) |
+| `scripts/50_drift_analysis.py` | Análise de drift (PSI) |
+| `scripts/51_learning_curve.py` | Curva de aprendizado |
+| `scripts/52_compile_final_results.py` | Compilação de resultados |
+| `scripts/53_generate_tcc_outputs.py` | Geração de figuras e tabelas para a monografia |
+| `scripts/54_classification_v4.py` | Classificação em níveis de risco |
+| `scripts/55_update_dashboard.py` | Atualização do dashboard Streamlit |
