@@ -1,7 +1,7 @@
 \chapter{Metodologia}
 \label{cap:metodologia}
 
-Este capítulo descreve o que foi realizado no TCC~2: as bases de dados utilizadas, o pipeline de processamento, as correções de qualidade identificadas durante a execução, a construção da série de modelagem e dos atributos, os modelos e os previsores de referência, e o protocolo de avaliação. Todo o código está versionado no repositório MODELO-PREVISAO \cite{modeloprevisao2026}, e a pipeline de modelagem é executada de ponta a ponta por um único comando (\texttt{scripts/rodar\_v3.sh}), com a divisão temporal definida em um arquivo de configuração (\texttt{config/recorte.json}).
+Este capítulo descreve o que foi realizado no TCC~2: as bases de dados utilizadas, o pipeline de processamento, as correções de qualidade identificadas durante a execução, a construção da série de modelagem e dos atributos, os modelos e os previsores de referência, e o protocolo de avaliação. Todo o código está versionado no repositório MODELO-PREVISAO \cite{modeloprevisao2026}, e a pipeline v4 de modelagem é executada sequencialmente pelos scripts~40 a 55 (\texttt{scripts/40\_aggregate\_sinan\_full.py} até \texttt{scripts/55\_build\_dashboard\_v4.py}), com a divisão temporal e os hiperparâmetros definidos em \texttt{config/recorte.json}.
 
 \section{Visão Geral}
 
@@ -77,21 +77,26 @@ O primeiro defeito tem consequência direta sobre a interpretação: em versões
 
 \section{Série de Modelagem e Divisão Temporal}
 
-A série final contém as 137 mesorregiões em 442 semanas contíguas, de 2018 a 2026, totalizando 60.554 linhas. O ano de 2018 foi utilizado apenas para o aquecimento das defasagens, e as últimas semanas de 2026, sem alvo disponível em $t+4$, foram descartadas. A divisão foi feita por ano epidemiológico (Tabela~\ref{tab:divisao_temporal}); a validação foi utilizada para a parada antecipada do treinamento, e o teste não foi utilizado em nenhuma decisão de modelagem.
+A série completa contém as 137~mesorregiões em todas as semanas epidemiológicas de 2000 a 2026 (188.512~linhas mesorregião-semana). O primeiro ano de cada variante é utilizado apenas para o aquecimento das defasagens, e as últimas semanas de 2026, sem alvo disponível em $t+4$, são descartadas. A divisão foi feita por ano epidemiológico; a validação foi utilizada para a parada antecipada, e o teste não foi utilizado em nenhuma decisão de modelagem.
+
+O experimento~v4 treinou três \textbf{variantes de janela temporal}, todas com o mesmo conjunto de teste e validação (Tabela~\ref{tab:divisao_temporal_v4}):
 
 \begin{table}[htb]
 \centering
-\caption{Divisão temporal da série de modelagem}
-\label{tab:divisao_temporal}
-\begin{tabular}{|l|c|r|c|}
+\caption{Divisão temporal das três variantes de treino da v4}
+\label{tab:divisao_temporal_v4}
+\begin{tabular}{|l|c|c|r|c|}
 \hline
-\textbf{Conjunto} & \textbf{Anos} & \textbf{Linhas} & \textbf{Cobertura climática} \\ \hline
-Treino & 2019 a 2022 & 28.633 & 89,4\% \\ \hline
-Validação & 2023 & 7.261 & 92,7\% \\ \hline
-Teste & 2024 a 2026 & 16.988 & 89,4\% \\ \hline
+\textbf{Variante} & \textbf{Warm-up} & \textbf{Treino} & \textbf{Linhas treino} & \textbf{Cob. INMET} \\ \hline
+Janela curta (A) & 2018 & 2019--2022 & 28.633 & 89,4\% \\ \hline
+Série longa (B) & 2000 & 2001--2022 & 157.413 & 72,8\% \\ \hline
+Série longa ponderada (C) & 2000 & 2001--2022 & 157.413 & 72,8\% \\ \hline
+\multicolumn{5}{|l|}{\textit{Validação:} 2023 (7.261 linhas) \quad \textit{Teste:} 2024--2026 (16.029 linhas)} \\ \hline
 \end{tabular}
 \fonte{Elaboração própria.}
 \end{table}
+
+A variante~A reproduz a divisão da v3 (4~anos de treino); a variante~B usa toda a série disponível (22~anos); a variante~C é idêntica à~B, mas aplica um peso amostral com decaimento exponencial ($\lambda=0{,}1$, referência 2022), de modo que anos recentes pesam mais no treino. As três variantes são combinadas com os mesmos três conjuntos de atributos descritos na Seção~\ref{sec:eng_atributos}, resultando em $3 \times 3 = 9$ combinações.
 
 O conjunto de teste inclui 2024, ano da maior epidemia de dengue registrada no Brasil, com cerca de 6,5 milhões de notificações. Nenhum ano do treino chegou perto dessa magnitude: o maior deles, 2019, teve cerca de 2,3 milhões. O teste funciona, portanto, como o ``teste de estresse'' previsto no TCC~1: avalia o modelo em anos típicos (2025 e 2026) e em um evento fora da distribuição de treino (2024).
 
@@ -104,7 +109,7 @@ Foram construídos 266 atributos, organizados em cinco grupos:
     \item \textbf{Climáticos brutos (12):} as doze variáveis semanais da semana $t$.
     \item \textbf{Defasagens climáticas (96):} as doze variáveis defasadas de 1 a 8 semanas.
     \item \textbf{Médias móveis biológicas (24):} médias das defasagens de cada variável nas janelas de 2 a 4 semanas (desenvolvimento do vetor) e de 4 a 8 semanas (ciclo completo com incubação), conforme a Figura~\ref{fig:defasagens_temporais}.
-    \item \textbf{Anomalias climáticas (24):} para cada variável, o desvio em relação à média histórica da mesma mesorregião e semana epidemiológica, em valor absoluto e padronizado pelo desvio-padrão. A climatologia foi calculada exclusivamente com os anos de treino (2019 a 2022).
+    \item \textbf{Anomalias climáticas (24):} para cada variável, o desvio em relação à média histórica da mesma mesorregião e semana epidemiológica, em valor absoluto e padronizado pelo desvio-padrão. A climatologia foi calculada exclusivamente com os anos de treino (2001 a 2022 para as variantes~B e~C; 2019 a 2022 para a variante~A).
 \end{itemize}
 
 \section{Variável Alvo e Classes de Risco}
@@ -117,12 +122,13 @@ Para a classificação, cada semana recebeu um de quatro níveis de risco (baixo
 
 \subsection{XGBoost}
 
-Foram treinadas três variantes do XGBoost, que diferem apenas no conjunto de atributos:
+Foram treinadas nove combinações do XGBoost, resultado do cruzamento de três \textbf{conjuntos de atributos} com as três \textbf{variantes de janela} da Tabela~\ref{tab:divisao_temporal_v4}. Os conjuntos de atributos são:
+\label{sec:eng_atributos}
 
 \begin{itemize}
-    \item \textbf{A (só SINAN):} os 110 atributos epidemiológicos;
-    \item \textbf{B (SINAN + INMET bruto):} A mais os 12 climáticos da semana $t$;
-    \item \textbf{C (SINAN + INMET enriquecido):} B mais as defasagens, médias móveis e anomalias climáticas (266 atributos).
+    \item \textbf{Só SINAN:} os 110 atributos epidemiológicos;
+    \item \textbf{SINAN + clima bruto:} os anteriores mais os 12 climáticos da semana $t$;
+    \item \textbf{SINAN + clima enriquecido:} os anteriores mais as defasagens, médias móveis e anomalias climáticas (266 atributos no total).
 \end{itemize}
 
 Os hiperparâmetros foram fixados para as três variantes, de modo que a comparação isole o efeito dos atributos: até 1.000 árvores com profundidade máxima 8, taxa de aprendizado 0,05, subamostragem de 80\% das linhas e das colunas, regularização L1 de 0,1 e L2 de 1, peso mínimo por folha igual a 5, e parada antecipada após 50 iterações sem melhora na validação. A classificação de risco utilizou as mesmas configurações com a função objetivo multiclasse (\textit{softprob}) e pesos inversamente proporcionais à frequência de cada classe.
@@ -147,7 +153,7 @@ Os modelos e baselines foram comparados por $R^2$ nas escalas logarítmica e ori
 
 \subsection{Validação Walk-Forward}
 
-Para avaliar a estabilidade ao longo do tempo, as três variantes foram retreinadas em quatro janelas expansivas, cada uma testada no ano seguinte: treino de 2019 a 2022 e teste em 2023, e assim sucessivamente até o teste em 2026. As janelas começam após o período de treino porque as anomalias climáticas usam a climatologia de 2019 a 2022; testar anos desse período reintroduziria o vazamento. Em cada janela, as últimas dez semanas do treino foram usadas para a parada antecipada.
+Para avaliar a estabilidade ao longo do tempo, as nove combinações foram retreinadas em quatro janelas expansivas (\textit{walk-forward}), cada uma testada no ano seguinte: a primeira janela treina até 2022 e testa em 2023, e assim sucessivamente até o teste em 2026. Para as variantes~B e~C, o início do treino é fixo em 2001; para a variante~A, é fixo em 2019. Em cada janela, as últimas dez semanas do treino foram usadas para a parada antecipada. Ao todo, 36~modelos foram treinados ($9 \times 4$ janelas).
 
 \subsection{Simulação de Atraso na Notificação}
 
@@ -159,11 +165,26 @@ Na prática, as notificações das semanas mais recentes chegam com atraso ao si
     \item \textbf{Só clima:} removidos todos os 110 atributos epidemiológicos, inclusive a codificação da semana do ano, restando apenas os 156 atributos climáticos.
 \end{itemize}
 
-Os cenários de atraso não removem as contagens agregadas da semana $t$ (por exemplo, casos confirmados ou prováveis), que também estariam sujeitas a atraso em uma aplicação real. Eles representam, portanto, uma simulação otimista da perda de informação.
+Os cenários de atraso não removem as contagens agregadas da semana $t$ (por exemplo, casos confirmados ou prováveis), que também estariam sujeitas a atraso em uma aplicação real. Eles representam, portanto, uma simulação otimista da perda de informação. A contagem de notificações da própria semana $t$ não é incluída como atributo em nenhum cenário.
+
+\subsection{Curva de Aprendizado}
+\label{sec:met_learning_curve}
+
+Para avaliar se o aumento do período de treino melhora ou degrada o desempenho, foi variado o ano de início do treino de 2001 a 2019 (com incrementos de 2 anos), mantendo fixos o teste (2024-2026) e a validação (2023). O $R^2_{\log}$ no teste foi registrado para cada tamanho de treino, com os três conjuntos de atributos.
+
+\subsection{Otimização de Hiperparâmetros (Optuna)}
+\label{sec:met_optuna}
+
+O Optuna \cite{optuna2019} foi utilizado para testar se a otimização dos hiperparâmetros melhora o desempenho em relação aos valores fixos. A busca utilizou a métrica $R^2_{\log}$ na validação como objetivo. Os resultados foram comparados com os hiperparâmetros fixos para verificar se a diferença justificaria o custo de otimização por variante.
+
+\subsection{Análise de Drift (PSI)}
+\label{sec:met_drift}
+
+Para quantificar a estabilidade da distribuição dos atributos entre o treino e cada ano de teste, foi calculado o \textit{Population Stability Index} (PSI) de cada atributo (Seção~\ref{sec:ref_drift}). Atributos com PSI acima de 0,25 foram sinalizados como instáveis.
 
 \subsection{Interpretação}
 
-Os valores SHAP do modelo C foram calculados com o TreeExplainer sobre todas as 16.988 linhas do teste. Para as variáveis climáticas mais importantes, o limiar foi estimado como o valor em que a contribuição média, calculada em 50 faixas da variável, muda de sinal.
+Os valores SHAP do conjunto ``SINAN + clima enriquecido'' foram calculados com o TreeExplainer sobre 10.000 amostras do teste, para cada variante de janela. Para as variáveis climáticas mais importantes, o limiar foi estimado como o valor em que a contribuição média, calculada em 50 faixas da variável, muda de sinal.
 
 \section{Experimento Complementar: Recorte com Maior Cobertura}
 

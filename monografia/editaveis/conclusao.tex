@@ -18,13 +18,12 @@ Além dos resultados de previsão, o trabalho contribui com um pipeline nacional
 \section{Limitações}
 
 \begin{itemize}
-    \item \textbf{Período de avaliação curto:} o treino cobre quatro anos e o teste três, um deles incompleto; a instabilidade entre anos na validação \textit{walk-forward} indica que as estimativas de desempenho dependem das temporadas avaliadas.
+    \item \textbf{Instabilidade entre temporadas:} embora a variante~B utilize 22~anos de treino, a instabilidade entre anos na validação \textit{walk-forward} indica que as estimativas de desempenho dependem fortemente das temporadas avaliadas no teste.
     \item \textbf{Evento fora da distribuição:} a epidemia de 2024 não tem precedente no treino, e o modelo não foi capaz de prever a sua magnitude.
     \item \textbf{Atributos da semana corrente:} a contagem de notificações da semana $t$, usada pela persistência, não foi incluída como atributo, e os cenários de atraso na notificação mantiveram contagens agregadas da semana corrente, o que torna a simulação otimista.
     \item \textbf{Cobertura e representatividade climática:} a cobertura variou entre 80\% e 98\% conforme o ano, e o clima de cada mesorregião é a média das estações nela localizadas, que podem não representar toda a sua extensão.
     \item \textbf{Qualidade das notificações:} o SINAN está sujeito a subnotificação e a mudanças na prática de notificação entre regiões e anos, e os dados dos anos mais recentes ainda podem ser revisados.
-    \item \textbf{Hiperparâmetros fixos:} as variantes do modelo compartilharam os mesmos hiperparâmetros, escolha que favorece a comparação entre conjuntos de atributos, mas não explora o melhor desempenho de cada variante.
-    \item \textbf{Sistemas desatualizados:} a API e os painéis ainda não refletem o modelo reprocessado.
+    \item \textbf{Hiperparâmetros fixos:} o Optuna foi testado na v4 e não foi adotado porque os resultados foram similares aos dos hiperparâmetros fixos; a limitação real é que os hiperparâmetros não foram otimizados separadamente por variante de treino.
 \end{itemize}
 
 \section{Trabalhos Futuros}
@@ -35,5 +34,6 @@ Além dos resultados de previsão, o trabalho contribui com um pipeline nacional
     \item Comparar com modelos estatísticos (SARIMA e SARIMAX) e de aprendizado profundo (LSTM) sob o mesmo protocolo e os mesmos baselines.
     \item Produzir intervalos de previsão, por meio de regressão quantílica, para expressar a incerteza dos alertas.
     \item Avaliar fontes climáticas complementares, como produtos de satélite e reanálise, para reduzir as lacunas de cobertura.
-    \item Atualizar a API e os painéis para o modelo mesorregional, com alertas derivados da regressão, e automatizar a atualização semanal dos dados.
+    \item Atualizar a API REST para o modelo mesorregional, com alertas derivados da regressão.
+    \item Testar outras janelas de treino intermediárias, otimizar os hiperparâmetros separadamente por variante, e explorar \textit{ensemble} que combine as previsões das variantes A, B e C.
 \end{itemize}
