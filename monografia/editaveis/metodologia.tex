@@ -46,6 +46,14 @@ A tabela oficial de municípios do IBGE forneceu os códigos, as coordenadas e a
 
 \section{Agregação Mesorregional e Integração}
 
+\subsection{Escolha da Escala Espacial}
+
+As duas bases têm granularidades diferentes: o SINAN registra as notificações por município de residência (5.570 municípios), enquanto o INMET mede o clima em cerca de 700 estações automáticas. Integrar as duas no nível municipal exigiria atribuir a cada município o clima da estação mais próxima, e o mapeamento estação--município mostra os limites dessa opção: a distância mediana até a estação mais próxima é de 32~km, um em cada cinco municípios não tem nenhuma estação em um raio de 50~km, e uma mesma estação seria a referência de seis municípios na mediana, chegando a 48. Na prática, o clima municipal seria uma cópia do clima de poucas estações, repetida em municípios com dinâmicas de transmissão distintas, e cada lacuna de uma estação se propagaria a todos os municípios associados a ela. Além disso, a maior parte dos municípios tem contagens semanais pequenas e com muitos zeros, o que torna a série ruidosa como alvo de previsão, e a base municipal teria cerca de 7,7~milhões de linhas, contra 188.512 na base mesorregional.
+
+No outro extremo, a agregação por unidade federativa reduziria o problema a 27 séries, insuficientes para treinar e avaliar o modelo, e misturaria em uma mesma série regiões com climas e calendários epidêmicos diferentes. As 137 mesorregiões geográficas do IBGE \cite{ibge1990mesorregioes} ficam entre esses extremos: todas têm ao menos uma estação (de 1 a 31, mediana de 4), o clima de cada uma é a média de várias estações, o que reduz a dependência de uma única série meteorológica, e as contagens agregadas são grandes o suficiente para que a série semanal tenha uma dinâmica bem definida. O experimento complementar descrito na Seção~\ref{sec:met_complementar}, que comparou os três níveis de agregação, reforçou essa escolha (Seção~\ref{sec:res_complementar}).
+
+\subsection{Agregação e Integração}
+
 A série epidemiológica de cada mesorregião é a \textbf{soma} das contagens dos seus municípios; as proporções e os índices clínicos foram agregados por média ponderada pelo número de notificações. A série climática de cada mesorregião é a \textbf{média} das estações nela localizadas. A soma das notificações por mesorregião foi conferida contra o total da camada Gold em cada ano, com diferença nula em todos os anos de 2018 a 2026.
 
 As duas séries foram unidas pela chave (mesorregião, ano epidemiológico, semana epidemiológica), mantendo todas as semanas epidemiológicas e deixando ausentes as variáveis climáticas das semanas sem estação ativa. A cobertura climática resultante foi de 90,1\% das mesorregião-semanas, variando de 80,0\% (2026) a 97,8\% (2019) entre os anos, como detalhado no Capítulo~\ref{cap:resultados}.
@@ -98,7 +106,7 @@ Série longa ponderada (C) & 2000 & 2001--2022 & 157.413 & 72,8\% \\ \hline
 
 A variante~A reproduz a divisão da v3 (4~anos de treino); a variante~B usa toda a série disponível (22~anos); a variante~C é idêntica à~B, mas aplica um peso amostral com decaimento exponencial ($\lambda=0{,}1$, referência 2022), de modo que anos recentes pesam mais no treino. As três variantes são combinadas com os mesmos três conjuntos de atributos descritos na Seção~\ref{sec:eng_atributos}, resultando em $3 \times 3 = 9$ combinações.
 
-O conjunto de teste inclui 2024, ano da maior epidemia de dengue registrada no Brasil, com cerca de 6,5 milhões de notificações. Nenhum ano do treino chegou perto dessa magnitude: o maior deles, 2019, teve cerca de 2,3 milhões. O teste funciona, portanto, como o ``teste de estresse'' previsto no TCC~1: avalia o modelo em anos típicos (2025 e 2026) e em um evento fora da distribuição de treino (2024).
+O conjunto de teste inclui 2024, ano da maior epidemia de dengue registrada no Brasil, com cerca de 6,6 milhões de notificações. Nenhum ano do treino chegou perto dessa magnitude: o maior deles foi 2015, com cerca de 2,4 milhões, na série longa, e 2019, com cerca de 2,3 milhões, na janela curta. O teste funciona, portanto, como o ``teste de estresse'' previsto no TCC~1: avalia o modelo em anos típicos (2025 e 2026) e em um evento fora da distribuição de treino (2024).
 
 \section{Engenharia de Atributos}
 
@@ -131,7 +139,31 @@ Foram treinadas nove combinações do XGBoost, resultado do cruzamento de três 
     \item \textbf{SINAN + clima enriquecido:} os anteriores mais as defasagens, médias móveis e anomalias climáticas (266 atributos no total).
 \end{itemize}
 
-Os hiperparâmetros foram fixados para as três variantes, de modo que a comparação isole o efeito dos atributos: até 1.000 árvores com profundidade máxima 8, taxa de aprendizado 0,05, subamostragem de 80\% das linhas e das colunas, regularização L1 de 0,1 e L2 de 1, peso mínimo por folha igual a 5, e parada antecipada após 50 iterações sem melhora na validação. A classificação de risco utilizou as mesmas configurações com a função objetivo multiclasse (\textit{softprob}) e pesos inversamente proporcionais à frequência de cada classe.
+Os hiperparâmetros foram os mesmos nas nove combinações, de modo que as diferenças de desempenho possam ser atribuídas à janela de treino e ao conjunto de atributos, e não a ajustes específicos de cada modelo. A Tabela~\ref{tab:hiperparametros} descreve o papel de cada um. Os valores foram fixados a priori, dentro das faixas usuais para o XGBoost, privilegiando um modelo regularizado: taxa de aprendizado baixa compensada por muitas árvores, amostragem de linhas e de colunas e penalidades sobre os pesos das folhas. A busca com o Optuna (Seção~\ref{sec:met_optuna}) foi usada para verificar se essa configuração estava distante do ótimo.
+
+\begin{table}[htb]
+\centering
+\caption{Hiperparâmetros do XGBoost e sua função}
+\label{tab:hiperparametros}
+\small
+\begin{tabular}{|p{0.22\textwidth}|c|p{0.58\textwidth}|}
+\hline
+\textbf{Hiperparâmetro} & \textbf{Valor} & \textbf{Função} \\ \hline
+\texttt{n\_estimators} & 1.000 & Número máximo de árvores somadas. Com a parada antecipada, o número efetivo é definido pela validação e ficou entre 78 e 517 árvores nas nove combinações. \\ \hline
+\texttt{learning\_rate} & 0,05 & Fração da correção de cada árvore incorporada à previsão. Valores baixos exigem mais árvores, mas tornam o ajuste mais gradual e menos sujeito a sobreajuste. \\ \hline
+\texttt{max\_depth} & 8 & Profundidade máxima de cada árvore, isto é, quantas condições podem ser encadeadas em uma regra. Controla a ordem das interações entre atributos que o modelo consegue representar, como clima e semana do ano. \\ \hline
+\texttt{min\_child\_weight} & 5 & Soma mínima dos pesos das observações em uma folha; com a perda quadrática e sem pesos amostrais, equivale a exigir ao menos cinco mesorregião-semanas por folha, evitando regras baseadas em casos isolados. \\ \hline
+\texttt{subsample} & 0,8 & Fração das linhas sorteada para construir cada árvore. Introduz variação entre as árvores e reduz a variância do conjunto. \\ \hline
+\texttt{colsample\_bytree} & 0,8 & Fração dos atributos sorteada para cada árvore. Impede que todas as árvores dependam dos mesmos atributos dominantes, como as notificações da semana anterior. \\ \hline
+\texttt{reg\_alpha} (L1) & 0,1 & Penalidade sobre o valor absoluto dos pesos das folhas, que leva pesos pouco úteis a zero. \\ \hline
+\texttt{reg\_lambda} (L2) & 1 & Penalidade sobre o quadrado dos pesos das folhas, que suaviza as previsões de cada árvore. \\ \hline
+\texttt{early\_stopping\_rounds} & 50 & Interrompe o treino quando o erro na validação (2023) não melhora por 50 árvores consecutivas. \\ \hline
+\texttt{tree\_method} & \texttt{hist} & Constrói as árvores a partir de histogramas dos atributos, o que acelera o treino na série longa (157 mil linhas). \\ \hline
+\end{tabular}
+\fonte{Elaboração própria a partir de \citeonline{chen2016xgboost} e \texttt{scripts/46\_train\_regression\_v4.py}.}
+\end{table}
+
+A classificação de risco utilizou as mesmas configurações com a função objetivo multiclasse (\textit{softprob}) e pesos inversamente proporcionais à frequência de cada classe.
 
 \subsection{Previsores de Referência}
 
@@ -150,6 +182,18 @@ Para a classificação, os mesmos limiares de risco do treino foram aplicados à
 \subsection{Comparação no Conjunto de Teste}
 
 Os modelos e baselines foram comparados por $R^2$ nas escalas logarítmica e original, MAE e RMSE, e a classificação por F1 macro, F1 por classe e AUC. As diferenças entre as variantes do XGBoost foram testadas por teste $t$ pareado sobre os erros quadráticos em escala logarítmica. O desempenho foi também desagregado por ano de teste, por UF, por mesorregião e para o recorte do Distrito Federal.
+
+\subsection{Métricas de Momento}
+\label{sec:met_momento}
+
+Como o objetivo principal é antecipar o momento dos surtos (Seção~\ref{sec:ref_magnitude}), o $R^2$ foi complementado por duas métricas de momento, calculadas para os modelos e para os baselines sobre o mesmo conjunto de teste:
+
+\begin{itemize}
+    \item \textbf{Erro na semana do pico:} para cada mesorregião e temporada (2024 e 2025) com ao menos uma semana no nível de risco mais alto, a diferença, em semanas, entre a semana de maior valor previsto e a semana de maior valor observado. São reportados a proporção de temporadas com erro de até duas semanas, o erro absoluto mediano e o erro médio, cujo sinal indica atraso (positivo) ou antecipação (negativo);
+    \item \textbf{Acerto de direção:} a proporção de mesorregião-semanas em que o sinal da variação prevista entre $t$ e $t+4$ coincide com o da variação observada, considerando apenas as variações relevantes, com valor absoluto de ao menos cinco notificações e de 20\% da contagem da semana $t$. A referência é uma regra ingênua que prolonga a tendência da última semana.
+\end{itemize}
+
+Essas métricas foram calculadas com os modelos salvos pelo script de regressão, sem retreino, pelo script \texttt{57\_avaliacao\_modelos\_salvos\_v4.py}, que também calcula os baselines no teste da v4.
 
 \subsection{Validação Walk-Forward}
 
@@ -187,6 +231,7 @@ Para quantificar a estabilidade da distribuição dos atributos entre o treino e
 Os valores SHAP do conjunto ``SINAN + clima enriquecido'' foram calculados com o TreeExplainer sobre 10.000 amostras do teste, para cada variante de janela. Para as variáveis climáticas mais importantes, o limiar foi estimado como o valor em que a contribuição média, calculada em 50 faixas da variável, muda de sinal.
 
 \section{Experimento Complementar: Recorte com Maior Cobertura}
+\label{sec:met_complementar}
 
 Em paralelo à pipeline mesorregional, foi conduzido um experimento controlado em um recorte de seis unidades federativas com maior cobertura climática (DF, ES, GO, MG, RJ e SP), de 2019 a 2023, no nível municipal e agregado por mesorregião e por UF, com teste em 2023. Esse experimento incluiu os mesmos três baselines, mediu a inflação das métricas causada pelo vazamento no rótulo de risco e avaliou uma definição binária de surto baseada no canal endêmico (média da semana epidemiológica em 2010 a 2018, e a variante com dois desvios-padrão) \cite{bortman1999canal}. Seus resultados são utilizados no Capítulo~\ref{cap:resultados} como verificação independente dos achados principais.
 
