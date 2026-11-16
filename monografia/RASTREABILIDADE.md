@@ -3,7 +3,7 @@
 Cada número do texto sai de um arquivo versionado ou, quando indicado, da saída de um
 comando reproduzível. Os caminhos abaixo são relativos
 ao repositório [MODELO-PREVISAO](https://github.com/modelo-previsao-dengue/MODELO-PREVISAO),
-no commit **`eb64c67`** (branch `main`, pipeline v4 completa), exceto quando indicado
+no commit **`a608385`** (branch `main`, pipeline v4 com o INMET corrigido), exceto quando indicado
 `monografia/`, que é este repositório.
 
 Para regenerar os relatórios da pipeline v4 (scripts 40–55):
@@ -30,8 +30,11 @@ Os dados corrigidos estão disponíveis em:
 | Classes de risco (distribuição) | `data/model_ready_v4/45_splits_report.json` |
 | Climatologia das anomalias | `data/model_ready_v4/44_anomalias_report.json` |
 | Hiperparâmetros do XGBoost | `scripts/46_train_regression_v4.py` (`XGB_PARAMS`) |
-| 2024 ≈ 6,5 milhões; 2019 ≈ 2,3 milhões de notificações | `data/model_ready_v4/40_sinan_meso_report.json` |
-| Correção do mapeamento de colunas INMET (header-name vs posicional) | `scripts/11_inmet_bronze_to_silver.py`, `data/model_ready_v4/41_inmet_meso_report.json` |
+| 2024 ≈ 6,6 milhões; 2015 ≈ 2,4 milhões (maior ano da série longa); 2019 ≈ 2,3 milhões (maior da janela curta) | `data/model_ready_v4/40_sinan_meso_report.json` (`notificacoes_por_ano`) |
+| Correção do mapeamento de colunas INMET (por nome do cabeçalho) | `scripts/inmet_extract_standardize.py`, `data/inmet/bronze/reports/us000_mapeamento_colunas_antes_depois.csv` |
+| Escala espacial: distância mediana de 32 km até a estação, 20% dos municípios sem estação a 50 km, 6 (máx. 48) municípios por estação | `data/inmet/bronze/municipio_estacao_mapping.csv` (colunas `distancia_km`, `n_estacoes_50km`, `codigo_wmo`) |
+| 1 a 31 estações por mesorregião (mediana 4) | `data/model_ready_v3/20_mapping_report.json` |
+| Número efetivo de árvores (78 a 517) | `data/model_ready_v4/46_regression_v4_report.json` (`best_iteration`) |
 
 ## Resultados (Capítulo 4)
 
@@ -48,12 +51,17 @@ Os dados corrigidos estão disponíveis em:
 | Melhor modelo: série longa 22 anos + clima enriquecido, R²_log = 0,890 | `data/model_ready_v4/46_regression_v4_report.json` |
 | Série longa vs curta: +0,015 R²_log (p < 10⁻⁴⁶) | `data/model_ready_v4/46_regression_v4_report.json` |
 | Ganho do clima: +0,008 R²_log | `data/model_ready_v4/46_regression_v4_report.json` |
-| Classificação: F1 macro 0,48 → 0,58 (série longa) | `data/model_ready_v4/54_classification_v4_report.json` |
+| Classificação: F1 macro 0,50 → 0,59 (janela curta → série longa, clima enriquecido) | `data/model_ready_v4/54_classification_v4_report.json` |
+| Baselines no teste da v4 (Tabela de desempenho no teste), desempenho por ano, previsto/real, topo de 5% | `data/model_ready_v4/57_avaliacao_modelos_salvos_v4_report.json` (`teste_agregado`, `por_ano`), gerado por `scripts/57_avaliacao_modelos_salvos_v4.py` |
+| Métricas de momento: pico a até 2 semanas, erro mediano e médio (179 temporadas), acerto de direção (10.367 semanas) | mesmo relatório 57 (`momento_pico`, `direcao`) |
+| Recorte do DF (117 semanas, Tabela do DF) e 277 mil notificações em 2024 | mesmo relatório 57 (`distrito_federal`) |
+| Clima melhora em 23 de 27 UFs e 99 de 137 mesorregiões; série longa melhora 118 mesorregiões | `models/regression_v4/metrics_por_uf_v4.csv`, `metrics_por_mesorregiao_v4.csv`; contagem em `monografia/dados/fatos_derivados.json` |
 
 ## Figuras
 
 | Figura | Origem |
 |---|---|
+| `figuras/resultados/fig_baselines_vs_xgboost.png`, `fig_serie_nacional_teste.png` | `monografia/scripts/gerar_figuras.py` (lê o relatório 57) |
 | `fig_v4_variante_comparison.png` | `scripts/53_generate_tcc_outputs.py` |
 | `fig_v4_r2_by_year.png` | `scripts/53_generate_tcc_outputs.py` |
 | `fig_v4_walkforward.png` | `scripts/53_generate_tcc_outputs.py` |
@@ -81,19 +89,26 @@ Os dados corrigidos estão disponíveis em:
 
 | Script | Função |
 |---|---|
-| `scripts/40_aggregate_sinan_mesorregiao.py` | Agregação SINAN por mesorregião |
-| `scripts/41_inmet_mesorregiao.py` | Agregação INMET por mesorregião (mapeamento corrigido) |
-| `scripts/42_integrate_sinan_inmet.py` | Integração SINAN + INMET |
-| `scripts/43_create_lags.py` | Engenharia de atributos (defasagens, médias móveis) |
-| `scripts/44_create_anomalias.py` | Anomalias climáticas |
-| `scripts/45_split_data.py` | Divisão treino/validação/teste |
+| `scripts/40_aggregate_sinan_full.py` | Agregação SINAN por mesorregião |
+| `scripts/41_aggregate_inmet_full.py` | Agregação INMET por mesorregião (mapeamento corrigido) |
+| `scripts/42_integrate_full.py` | Integração SINAN + INMET |
+| `scripts/43_feature_eng_lags_v4.py` | Engenharia de atributos (defasagens, médias móveis) |
+| `scripts/44_feature_eng_anomalias_v4.py` | Anomalias climáticas |
+| `scripts/45_prepare_splits_v4.py` | Divisão treino/validação/teste |
 | `scripts/46_train_regression_v4.py` | Treinamento regressão (9 combinações) |
 | `scripts/47_walkforward_v4.py` | Validação walk-forward (36 modelos) |
-| `scripts/48_explain_shap.py` | Interpretação SHAP |
-| `scripts/49_optuna_v4.py` | Otimização Optuna (30 trials) |
-| `scripts/50_drift_analysis.py` | Análise de drift (PSI) |
+| `scripts/48_shap_importance_v4.py` | Interpretação SHAP |
+| `scripts/49_optuna_tuning_v4.py` | Otimização Optuna (30 trials) |
+| `scripts/50_data_drift_analysis.py` | Análise de drift (PSI) |
 | `scripts/51_learning_curve.py` | Curva de aprendizado |
-| `scripts/52_compile_final_results.py` | Compilação de resultados |
+| `scripts/52_compile_final_v4.py` | Compilação de resultados |
 | `scripts/53_generate_tcc_outputs.py` | Geração de figuras e tabelas para a monografia |
-| `scripts/54_classification_v4.py` | Classificação em níveis de risco |
-| `scripts/55_update_dashboard.py` | Atualização do dashboard Streamlit |
+| `scripts/54_train_classification_v4.py` | Classificação em níveis de risco |
+| `scripts/55_build_dashboard_v4.py` | Atualização do dashboard Streamlit |
+| `scripts/57_avaliacao_modelos_salvos_v4.py` | Baselines, métricas por ano, métricas de momento e recorte do DF com os modelos salvos (sem retreino) |
+
+## Pendências
+
+- Optuna (`49_optuna_report.json`) ainda é da rodada de 04/11, anterior à correção do INMET.
+- Simulação de atraso na notificação (data blindness) e limiares de alerta na v4: dependem do treino (`splits_*/train.parquet`, no HuggingFace).
+- `scripts/57_avaliacao_modelos_salvos_v4.py` precisa ser commitado no MODELO-PREVISAO para que o relatório 57 fique versionado.

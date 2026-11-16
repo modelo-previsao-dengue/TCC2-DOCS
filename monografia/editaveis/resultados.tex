@@ -42,7 +42,7 @@ No experimento complementar, a correção do vazamento no rótulo de risco mostr
 \section{Comparação com os Previsores de Referência}
 \label{sec:res_baselines}
 
-A Tabela~\ref{tab:baselines} e a Figura~\ref{fig:baselines} apresentam o principal resultado do trabalho. Na escala logarítmica, o XGBoost supera todos os baselines: o melhor modelo (variante~B, série longa, clima enriquecido) alcança $R^2_{\log}=0{,}890$, contra 0,808 da persistência. O MAE também favorece o modelo (244 contra 277 notificações por mesorregião-semana). Na escala original, porém, a ordem se inverte: a persistência obtém $R^2=0{,}668$, praticamente o dobro do melhor modelo (0,410), e um RMSE 27\% menor.
+A Tabela~\ref{tab:baselines} e a Figura~\ref{fig:baselines} comparam os modelos com os previsores ingênuos no mesmo conjunto de teste. Na escala logarítmica, o XGBoost supera todos os baselines: o melhor modelo (série longa com clima enriquecido) alcança $R^2_{\log}=0{,}890$, contra 0,818 da persistência, e o MAE também o favorece (244 contra 292 notificações por mesorregião-semana). Na escala original, porém, a ordem se inverte: a persistência obtém $R^2=0{,}668$, contra 0,412 do melhor modelo, e um RMSE 25\% menor. Como discutido na Seção~\ref{sec:ref_magnitude}, essas duas leituras correspondem a duas perguntas diferentes, a do momento e a da magnitude dos surtos, tratadas separadamente a seguir.
 
 \begin{table}[htb]
 \centering
@@ -52,13 +52,13 @@ A Tabela~\ref{tab:baselines} e a Figura~\ref{fig:baselines} apresentam o princip
 \begin{tabular}{|l|c|c|r|r|}
 \hline
 \textbf{Modelo} & \textbf{$R^2_{\log}$} & \textbf{$R^2$} & \textbf{MAE} & \textbf{RMSE} \\ \hline
-Persistência & 0,808 & \textbf{0,668} & 277,1 & \textbf{1.495,6} \\ \hline
-Média móvel (4 semanas) & 0,757 & 0,459 & 361,9 & 1.909,6 \\ \hline
-Sazonal (ano anterior) & 0,356 & $-$0,719 & 712,9 & 3.404,9 \\ \hline
-XGBoost A (4~anos, só SINAN) & 0,869 & 0,314 & 275,7 & 2.212,6 \\ \hline
-XGBoost B (22~anos, + clima enriq.) & \textbf{0,890} & 0,410 & \textbf{244,4} & 2.051,9 \\ \hline
+Persistência & 0,818 & \textbf{0,668} & 292,2 & \textbf{1.539,9} \\ \hline
+Média móvel (4 semanas) & 0,766 & 0,459 & 381,5 & 1.965,8 \\ \hline
+Sazonal (ano anterior) & 0,375 & $-$0,716 & 737,6 & 3.499,1 \\ \hline
+XGBoost, série longa, só SINAN & 0,882 & 0,384 & 257,1 & 2.096,0 \\ \hline
+XGBoost, série longa + clima enriq. & \textbf{0,890} & 0,412 & \textbf{244,2} & 2.049,1 \\ \hline
 \end{tabular}
-\fonte{Elaboração própria. A variante~B com clima enriquecido é a melhor das nove combinações (Tabela~\ref{tab:v4_variantes}).}
+\fonte{Elaboração própria. Modelos treinados pelo script~46 e avaliados, junto com os baselines, pelo script~57 do repositório MODELO-PREVISAO sobre as mesmas 16.029 mesorregião-semanas.}
 \end{table}
 
 \begin{figure}[htb]
@@ -74,30 +74,30 @@ As duas escalas medem coisas diferentes (Capítulo~\ref{cap:referencial}). O $R^
 \section{Desempenho por Ano e o Evento Epidêmico de 2024}
 \label{sec:res_2024}
 
-A desagregação por ano (Tabela~\ref{tab:por_ano}) mostra de onde vem a desvantagem do modelo na escala original. Em 2024, o modelo C previu 3,45 milhões de notificações, quando ocorreram 6,44 milhões; nas 5\% de mesorregião-semanas com mais notificações daquele ano, a previsão cobriu apenas 36\% do total observado, contra 90\% da persistência. Em 2025 e 2026, ao contrário, o modelo C superou a persistência em todas as métricas: $R^2$ de 0,773 contra 0,714 em 2025 e de 0,862 contra 0,763 em 2026, com MAE 29\% e 10\% menor, respectivamente.
+A desagregação por ano (Tabela~\ref{tab:por_ano}) mostra de onde vem a desvantagem do modelo na escala original. Em 2024, o melhor modelo previu 3,77 milhões de notificações, quando ocorreram 6,44 milhões; nas 5\% de mesorregião-semanas com mais notificações daquele ano, a previsão cobriu 44\% do total observado, contra 90\% da persistência. Em 2025 e 2026, ao contrário, o modelo superou a persistência em todas as métricas: $R^2$ de 0,822 contra 0,714 em 2025 e de 0,737 contra 0,615 em 2026, com MAE 36\% e 15\% menor, respectivamente. Os valores de $R^2_{\log}$ de 2026 são mais baixos para todos os métodos porque o ano está incompleto e as notificações das semanas mais recentes ainda não estavam consolidadas no SINAN quando os dados foram extraídos, o que aparece como uma queda artificial no fim da série observada (Figura~\ref{fig:serie_nacional}).
 
 \begin{table}[htb]
 \centering
-\caption{Desempenho por ano de teste: XGBoost e persistência}
+\caption{Desempenho por ano de teste: XGBoost (série longa) e persistência}
 \label{tab:por_ano}
 \small
 \begin{tabular}{|c|l|c|c|r|r|}
 \hline
 \textbf{Ano} & \textbf{Modelo} & \textbf{$R^2$} & \textbf{$R^2_{\log}$} & \textbf{MAE} & \textbf{Previsto / real (mi)} \\ \hline
 2024 & Persistência & \textbf{0,660} & 0,839 & 530,9 & 6,56 / 6,44 \\ \hline
-2024 & XGBoost A & 0,247 & 0,889 & 546,6 & 2,89 / 6,44 \\ \hline
-2024 & XGBoost C & 0,312 & \textbf{0,903} & \textbf{505,5} & 3,45 / 6,44 \\ \hline
-2025 & Persistência & 0,714 & 0,834 & 107,5 & 1,64 / 1,54 \\ \hline
-2025 & XGBoost A & 0,692 & 0,885 & 81,2 & 1,21 / 1,54 \\ \hline
-2025 & XGBoost C & \textbf{0,773} & \textbf{0,891} & \textbf{76,0} & 1,38 / 1,54 \\ \hline
-2026 & Persistência & 0,763 & 0,535 & 56,1 & 0,32 / 0,34 \\ \hline
-2026 & XGBoost A & 0,848 & 0,605 & 51,2 & 0,32 / 0,34 \\ \hline
-2026 & XGBoost C & \textbf{0,862} & \textbf{0,620} & \textbf{50,5} & 0,33 / 0,34 \\ \hline
+2024 & Só SINAN & 0,355 & 0,913 & 489,7 & 3,57 / 6,44 \\ \hline
+2024 & + clima enriquecido & 0,383 & \textbf{0,918} & \textbf{464,4} & 3,77 / 6,44 \\ \hline
+2025 & Persistência & 0,714 & 0,833 & 107,7 & 1,64 / 1,55 \\ \hline
+2025 & Só SINAN & 0,809 & 0,890 & 72,9 & 1,36 / 1,55 \\ \hline
+2025 & + clima enriquecido & \textbf{0,822} & \textbf{0,900} & \textbf{69,4} & 1,40 / 1,55 \\ \hline
+2026 & Persistência & 0,615 & 0,503 & 72,7 & 0,18 / 0,22 \\ \hline
+2026 & Só SINAN & \textbf{0,738} & 0,559 & 63,1 & 0,21 / 0,22 \\ \hline
+2026 & + clima enriquecido & 0,737 & \textbf{0,571} & \textbf{62,2} & 0,22 / 0,22 \\ \hline
 \end{tabular}
-\fonte{Elaboração própria. Previsto e real em milhões de notificações no ano.}
+\fonte{Elaboração própria (script~57). Previsto e real em milhões de notificações no ano; 2026 até a semana~12.}
 \end{table}
 
-A Figura~\ref{fig:serie_nacional} mostra o comportamento na série nacional, somando as 137 mesorregiões. Em 2024, o modelo acompanha a subida e a queda da epidemia no tempo certo, mas satura em cerca de metade da altura do pico. A persistência atinge a altura correta, mas com quatro semanas de atraso, que é exatamente o horizonte de previsão. Em 2025 e 2026, o modelo C segue a série observada de perto, enquanto a persistência continua defasada.
+A Figura~\ref{fig:serie_nacional} mostra o comportamento na série nacional, somando as 137 mesorregiões. Em 2024, o modelo acompanha a subida e a queda da epidemia no tempo certo, e o seu máximo ocorre uma semana antes do máximo observado, mas satura em pouco mais da metade da altura do pico. A persistência atinge a altura correta, mas com quatro semanas de atraso, que é exatamente o horizonte de previsão. Em 2025, uma temporada menor e de pico mais achatado, o modelo segue a série observada de perto durante a subida e a descida.
 
 \begin{figure}[htb]
     \centering
@@ -107,38 +107,50 @@ A Figura~\ref{fig:serie_nacional} mostra o comportamento na série nacional, som
     \fonte{Elaboração própria.}
 \end{figure}
 
-Dois mecanismos, descritos no Capítulo~\ref{cap:referencial}, explicam esse comportamento. O primeiro é a incapacidade de extrapolação das árvores: o maior ano do treino (2019) teve cerca de 2,3 milhões de notificações, e o modelo não consegue produzir valores muito acima da faixa que viu. O segundo é o treinamento sobre $\log(1+y)$, que minimiza erros relativos e tende a subestimar os valores extremos quando a previsão é revertida para a escala original. A persistência, por construção, não tem teto: repete qualquer valor, inclusive um inédito. O resultado responde de forma direta ao ``teste de estresse'' proposto no TCC~1: o modelo antecipa o \textit{momento} de uma epidemia extrema, mas não a sua \textit{magnitude}.
+Dois mecanismos, descritos no Capítulo~\ref{cap:referencial}, explicam esse comportamento. O primeiro é a incapacidade de extrapolação das árvores: o maior ano do treino da série longa (2015) teve cerca de 2,4 milhões de notificações, e o modelo não consegue produzir valores muito acima da faixa que viu. O segundo é o treinamento sobre $\log(1+y)$, que minimiza erros relativos e tende a subestimar os valores extremos quando a previsão é revertida para a escala original. A persistência, por construção, não tem teto: repete qualquer valor, inclusive um inédito. O resultado responde de forma direta ao ``teste de estresse'' proposto no TCC~1: o modelo antecipa o \textit{momento} de uma epidemia extrema, mas não a sua \textit{magnitude}.
 
 Há ainda um fator de desenho: a contagem de notificações da própria semana $t$, que é exatamente o que a persistência usa, não foi incluída entre os atributos do modelo (a informação mais recente disponível para ele é a contagem de casos confirmados ou prováveis da semana $t$ e as notificações a partir de $t-1$). No experimento complementar, em que essa contagem foi incluída, a diferença para a persistência na escala original foi bem menor ($R^2$ de 0,390 contra 0,400), embora em outro recorte e período de teste (Seção~\ref{sec:res_complementar}).
+
+\section{Antecipação do Momento dos Surtos}
+\label{sec:res_momento}
+
+As métricas de momento (Seção~\ref{sec:met_momento}) avaliam diretamente o objetivo principal do trabalho. A Tabela~\ref{tab:momento} resume o erro na semana do pico nas 179 mesorregião-temporadas de 2024 e 2025 que tiveram ao menos uma semana no nível de risco mais alto. O XGBoost com série longa e clima enriquecido situou o pico previsto a até duas semanas do pico observado em 48\% dessas temporadas, contra 4\% da persistência e 2\% da média móvel. O erro médio do modelo é próximo de zero ($-0{,}2$ semana), isto é, ele não tende a antecipar nem a atrasar o pico de forma sistemática, enquanto a persistência erra, em média, quase três semanas para depois, consequência direta de repetir o valor da semana $t$. O baseline sazonal acerta a semana do pico com mais frequência que a persistência (31\% a até duas semanas), porque o calendário da dengue se repete de um ano para o outro, mas erra por muito nas temporadas que fogem do padrão, com erro médio de nove semanas.
+
+\begin{table}[htb]
+\centering
+\caption{Erro na semana do pico nas mesorregião-temporadas com surto (2024 e 2025)}
+\label{tab:momento}
+\small
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Modelo} & \textbf{Pico a até 2 semanas} & \textbf{Erro mediano (sem.)} & \textbf{Erro médio (sem.)} \\ \hline
+Persistência & 3,9\% & 4 & $+2{,}9$ \\ \hline
+Média móvel (4 semanas) & 2,2\% & 6 & $+4{,}1$ \\ \hline
+Sazonal (ano anterior) & 30,7\% & 5 & $+9{,}3$ \\ \hline
+XGBoost, série longa, só SINAN & 44,7\% & 3 & $-0{,}3$ \\ \hline
+XGBoost, série longa + clima enriq. & \textbf{48,0\%} & \textbf{3} & $\mathbf{-0{,}2}$ \\ \hline
+\end{tabular}
+\fonte{Elaboração própria (script~57). Erro positivo indica pico previsto depois do observado; $n=179$ mesorregião-temporadas.}
+\end{table}
+
+O modelo também acerta o sentido da variação: entre as 10.367 mesorregião-semanas em que as notificações mudaram de forma relevante entre $t$ e $t+4$, a previsão indicou corretamente se elas iriam subir ou descer em 82\% dos casos, contra 56\% de uma regra ingênua que repete a tendência da última semana. A persistência, por construção, não indica direção alguma. O clima contribui nos dois indicadores: sem ele, o pico a até duas semanas cai de 48\% para 45\% e o acerto de direção, de 82\% para 80\%.
+
+Esses resultados qualificam a comparação da Seção~\ref{sec:res_baselines}. A vantagem da persistência na escala original vem da magnitude, que ela reproduz com quatro semanas de atraso; quando a pergunta é \textit{quando} o surto vai acontecer, que é a informação que permite preparar serviços e intensificar o controle vetorial com antecedência, o XGBoost é claramente superior aos previsores ingênuos.
 
 \section{Contribuição das Variáveis Climáticas}
 \label{sec:res_clima}
 
 A inclusão do clima melhorou o modelo de forma pequena, mas consistente e estatisticamente significativa. Na variante~B (22~anos), o $R^2_{\log}$ passou de 0,882 (só SINAN) para 0,885 (+INMET bruto, $\Delta=+0{,}003$) e 0,890 (+INMET enriquecido, $\Delta=+0{,}008$); na variante~A (4~anos), o ganho total foi semelhante: de 0,869 para 0,874 ($\Delta=+0{,}005$). Todos os deltas foram significativos ($p<10^{-30}$). Na escala original, o ganho do clima é proporcionalmente maior: o $R^2$ passou de 0,385 para 0,410 na variante~B e o MAE caiu 5\%.
 
-O ganho se repetiu na validação \textit{walk-forward} (Tabela~\ref{tab:walkforward}): a variante~B com clima enriquecido superou a correspondente ``só SINAN'' nas quatro janelas, com média de $R^2_{\log}$ de 0,809 contra 0,795. A tabela também mostra a instabilidade entre anos, com $R^2_{\log}$ entre 0,56 e 0,92: o desempenho depende fortemente das características de cada temporada.
+O ganho se repetiu na validação \textit{walk-forward} (Seção~\ref{sec:res_walkforward_v4}): na série longa, o modelo com clima enriquecido superou o ``só SINAN'' nas quatro janelas (testes de 2023 a 2026), com média de $R^2_{\log}$ de 0,809 contra 0,803. As janelas também mostram a instabilidade entre anos, com $R^2_{\log}$ entre 0,56 e 0,92: o desempenho depende fortemente das características de cada temporada.
 
-\begin{table}[htb]
-\centering
-\caption{Validação \textit{walk-forward}: $R^2_{\log}$ por janela (A: só SINAN; B: com clima bruto; C: com clima enriquecido)}
-\label{tab:walkforward}
-\begin{tabular}{|c|c|c|c|c|}
-\hline
-\textbf{Treino} & \textbf{Teste} & \textbf{A} & \textbf{B} & \textbf{C} \\ \hline
-2019 a 2022 & 2023 & 0,815 & 0,819 & \textbf{0,828} \\ \hline
-2019 a 2023 & 2024 & 0,876 & 0,858 & \textbf{0,909} \\ \hline
-2019 a 2024 & 2025 & 0,889 & 0,895 & \textbf{0,896} \\ \hline
-2019 a 2025 & 2026 & 0,617 & 0,626 & \textbf{0,629} \\ \hline
-\multicolumn{2}{|c|}{Média} & 0,799 & 0,799 & \textbf{0,815} \\ \hline
-\end{tabular}
-\fonte{Elaboração própria.}
-\end{table}
+Geograficamente, na série longa, o clima enriquecido melhorou o $R^2_{\log}$ em 23 das 27 UFs e em 99 das 137 mesorregiões, com ganhos de até $+0{,}18$ e perdas de até $-0{,}14$ por mesorregião. Essa heterogeneidade é coerente com a literatura, que descreve associações clima--dengue diferentes entre regiões. O efeito da série longa é mais amplo: ela melhorou o desempenho em 118 das 137 mesorregiões (Figura~\ref{fig:delta_meso}).
 
-Geograficamente, o modelo C superou o A em 22 das 27 UFs e em 103 das 137 mesorregiões. A Figura~\ref{fig:delta_meso} mostra as 20 mesorregiões com maior ganho e as 20 com maior perda: os ganhos chegam a +0,20 de $R^2_{\log}$, e as perdas, principalmente em mesorregiões do Nordeste, a $-$0,14. Essa heterogeneidade é coerente com a literatura, que descreve associações clima--dengue diferentes entre regiões.
+O tamanho reduzido do ganho do clima é coerente com o que a literatura descreve para previsões de curto prazo (Seção~\ref{sec:ref_clima_curto_prazo}): com quatro semanas de antecedência, as notificações recentes já incorporam o efeito do clima das semanas anteriores, e a análise SHAP (Seção~\ref{sec:res_shap}) confirma que a previsão é dominada pela própria série epidemiológica.
 
 \begin{figure}[htb]
     \centering
-    \caption{Variação do $R^2_{\log}$ com o clima enriquecido (C $-$ A), por mesorregião (código IBGE): 20 maiores ganhos e 20 maiores perdas}
+    \caption{Variação do $R^2_{\log}$ com a série longa (variante~B $-$ variante~A, clima enriquecido), por mesorregião (código IBGE): 20 maiores ganhos e 20 maiores perdas}
     \includegraphics[width=0.75\textwidth]{figuras/resultados_v4/fig_v4_delta_mesorregiao_B_vs_A.png}
     \label{fig:delta_meso}
     \fonte{Elaboração própria.}
@@ -146,6 +158,8 @@ Geograficamente, o modelo C superou o A em 22 das 27 UFs e em 103 das 137 mesorr
 
 \section{Clima na Ausência de Dados Epidemiológicos Recentes}
 \label{sec:res_blindness}
+
+\textbf{[PENDENTE: os números desta seção ainda são da pipeline v3 (janela curta de 2019 a 2022). A simulação será refeita na v4 com os mesmos dados de treino das demais seções.]}
 
 A Tabela~\ref{tab:blindness} e a Figura~\ref{fig:blindness} apresentam os cenários de atraso na notificação. Quando as defasagens recentes de notificações são removidas, o clima continua acrescentando informação, e o ganho é significativo com atraso de 4 semanas (+0,0047) e de 8 semanas (+0,0035). No cenário extremo, sem nenhum atributo epidemiológico, o modelo sem clima fica sem nenhuma variável informativa e não tem capacidade preditiva ($R^2_{\log}=-0{,}011$), enquanto as variáveis climáticas sozinhas explicam 39\% da variância em escala logarítmica. Como a codificação da semana do ano também é removida nesse cenário, a sazonalidade que o modelo capta vem apenas do próprio ciclo anual das variáveis climáticas.
 
@@ -237,7 +251,25 @@ O experimento complementar chegou ao mesmo resultado com uma definição de surt
 \section{Recorte do Distrito Federal}
 \label{sec:res_df}
 
-O Distrito Federal, foco do TCC~1, corresponde a uma única mesorregião, com 124 semanas no teste. Nele, o clima trouxe o maior ganho entre as 27 UFs: o $R^2_{\log}$ passou de 0,722 (A) para 0,789 (C) e o $R^2$ na escala original de 0,333 para 0,466. Ainda assim, a persistência foi superior ($R^2_{\log}=0{,}826$ e $R^2=0{,}647$). O padrão é o mesmo do agregado nacional: o modelo subestimou o total do período, prevendo cerca de 155 mil notificações para 256 mil observadas, principalmente pela epidemia de 2024.
+O Distrito Federal, foco do TCC~1, corresponde a uma única mesorregião, com 117 semanas no teste. Nele, os dois fatores avaliados tiveram efeito expressivo. A série longa elevou o $R^2_{\log}$ do modelo só SINAN de 0,785 para 0,847, e o clima enriquecido levou o modelo da série longa a 0,856 e, na escala original, de $R^2=0{,}526$ para 0,694 (Tabela~\ref{tab:df}). Com isso, o modelo superou a persistência na escala original ($R^2$ de 0,694 contra 0,644) e no erro absoluto (MAE 18\% menor), e ficou praticamente empatado com ela na escala logarítmica (0,856 contra 0,862). O padrão de subestimação da epidemia de 2024 se mantém: o modelo previu cerca de 201 mil notificações para 255 mil observadas no período de teste.
+
+\begin{table}[htb]
+\centering
+\caption{Recorte do Distrito Federal no conjunto de teste}
+\label{tab:df}
+\small
+\begin{tabular}{|l|c|c|r|r|}
+\hline
+\textbf{Modelo} & \textbf{$R^2_{\log}$} & \textbf{$R^2$} & \textbf{MAE} & \textbf{Previsto / real (mil)} \\ \hline
+Persistência & \textbf{0,862} & 0,644 & 1.194,7 & 290 / 255 \\ \hline
+Janela curta, só SINAN & 0,785 & 0,463 & 1.247,9 & 132 / 255 \\ \hline
+Série longa, só SINAN & 0,847 & 0,526 & 1.182,5 & 146 / 255 \\ \hline
+Série longa + clima enriq. & 0,856 & \textbf{0,694} & \textbf{975,4} & 201 / 255 \\ \hline
+\end{tabular}
+\fonte{Elaboração própria (script~57).}
+\end{table}
+
+Os totais do teste não coincidem com as cerca de 277 mil notificações de residentes do DF em 2024 porque o alvo de cada linha é a semana $t+4$: as quatro primeiras semanas de 2024 ficam fora do teste, e 2025 e 2026 tiveram poucos casos no DF.
 
 \section{Verificação Independente: Experimento Complementar}
 \label{sec:res_complementar}
@@ -393,9 +425,9 @@ Os valores SHAP foram calculados para as variantes~A e~B com 10.000~amostras do 
 Os resultados respondem às questões formuladas na introdução:
 
 \begin{enumerate}
-    \item \textbf{XGBoost contra baselines.} O XGBoost (variante~B, série longa, clima enriquecido) supera todos os previsores ingênuos em escala logarítmica ($R^2_{\log}=0{,}890$ contra 0,808 da persistência) e em erro absoluto, e supera a persistência em todas as métricas nos anos típicos (2025 e 2026). No evento extremo de 2024, antecipa o momento da epidemia, mas subestima a sua magnitude em cerca de metade, e perde para a persistência na escala original.
+    \item \textbf{XGBoost contra baselines.} O XGBoost (série longa, clima enriquecido) supera todos os previsores ingênuos em escala logarítmica ($R^2_{\log}=0{,}890$ contra 0,818 da persistência) e em erro absoluto, e supera a persistência em todas as métricas nos anos típicos (2025 e 2026). Na antecipação do momento, situa o pico a até duas semanas do observado em 48\% das temporadas com surto, contra 4\% da persistência, sem atraso sistemático, e acerta o sentido da variação em 82\% dos casos. No evento extremo de 2024, porém, subestima a magnitude da epidemia, prevendo cerca de 59\% das notificações, e perde para a persistência na escala original.
     \item \textbf{Série longa vs.\ curta.} A série de 22~anos (variante~B) superou a de 4~anos (variante~A) em $+0{,}015$ de $R^2_{\log}$ ($p < 10^{-46}$), e o ganho foi consistente no \textit{walk-forward} ($+0{,}014$) e na classificação ($+0{,}094$ de F1~macro). A curva de aprendizado confirma rendimentos decrescentes, e o peso de recência (variante~C) não trouxe melhora adicional. A análise de drift mostra que, apesar da instabilidade distribucional dos anos iniciais (PSI $> 1{,}9$), os dados antigos contribuem positivamente para o modelo.
-    \item \textbf{Contribuição do clima.} O ganho é pequeno em relação à informação epidemiológica ($+0{,}008$ de $R^2_{\log}$ na variante~B), mas consistente: significativo no teste, presente em todas as janelas do \textit{walk-forward}, em 22 das 27 UFs e em 103 das 137 mesorregiões, e mantido quando os dados epidemiológicos recentes estão ausentes. Sem nenhuma informação epidemiológica, o clima sozinho explica 39\% da variância em escala logarítmica.
+    \item \textbf{Contribuição do clima.} O ganho é pequeno em relação à informação epidemiológica ($+0{,}008$ de $R^2_{\log}$ na variante~B), mas consistente: significativo no teste, presente em todas as janelas do \textit{walk-forward}, em 23 das 27 UFs e em 99 das 137 mesorregiões, e responsável por parte do ganho na antecipação do pico. \textbf{[PENDENTE: papel do clima na ausência de dados epidemiológicos recentes, a confirmar com a simulação de atraso na v4.]}
     \item \textbf{Variáveis e limiares.} A temperatura (mínima acima de 13,8~$^\circ$C e média acima de 21~$^\circ$C) e a chuva na janela de 2 a 4 semanas são as variáveis climáticas mais utilizadas, com limiares coerentes com a biologia do vetor. A associação com a ``umidade'' encontrada em versões anteriores era um artefato de dados.
     \item \textbf{Otimização de hiperparâmetros.} O Optuna não encontrou configuração significativamente melhor que a fixa (melhora $< 0{,}3\%$), indicando que os hiperparâmetros escolhidos já estavam próximos do ótimo.
 \end{enumerate}

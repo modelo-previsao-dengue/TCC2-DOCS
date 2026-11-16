@@ -1,117 +1,140 @@
 # Revisão da monografia do TCC 2
 
-Revisão completa do texto em LaTeX (`monografia/`), feita em 10/11/2026 sobre a `main`
-(merge do PR #1, commit `aa98c9c`). O objetivo é listar o que está **desatualizado**,
-**inconsistente** ou **repetitivo** antes da rodada de ajustes, e dividir o trabalho
-entre Thiago e Pedro.
+| | |
+|---|---|
+| **Revisão 1** | 10/11/2026, sobre a `main` em `aa98c9c` (antes da v4 corrigida) |
+| **Revisão 2** | 15/11/2026, sobre a `main` em `0ad0b40` (PR #3 do Pedro) + PR #4 do Thiago (`docs/texto-thiago`) |
+| **Dados de referência** | MODELO-PREVISAO `a608385` (v4 com o INMET corrigido) + script 57 (PR #3 do MODELO-PREVISAO) |
 
-Os números de linha se referem aos arquivos em `monografia/editaveis/`.
+Os números de linha se referem aos arquivos em `monografia/editaveis/` na branch `docs/texto-thiago`.
 
-## Decisões do orientador que guiam a revisão
+## Resumo do status
+
+- **A v4 foi refeita com o INMET corrigido** (Pedro, MODELO-PREVISAO `a608385`): 27 anos completos, nenhum ano sem Silver, cobertura de 87–93% em 2009, 2020 e 2022.
+- **A maior parte da revisão 1 foi concluída** (PRs #3 e #4 do TCC2-DOCS). Restam três blocos:
+  1. **Capítulo 4 misturado:** seções da v3 convivem com as da v4 (base de modelagem, tabela antes/depois, SHAP, classificação). É o principal pendente.
+  2. **Análises que dependem do treino da v4:** cegueira de dados e alertas por limiar. Estão bloqueadas pelo acesso do Thiago ao dataset restrito no HuggingFace.
+  3. **Números da v4 desatualizados em seções do Pedro:** classificação e Optuna, que vieram da rodada anterior à correção do INMET.
+- **Os marcadores `[PENDENTE: ...]` no texto** indicam onde ainda falta resultado. Todos precisam sumir antes da entrega.
+
+## Decisões do orientador (mantidas)
 
 - Manter o treino da **v4**; mais testes de hiperparâmetros ficam para trabalhos futuros.
-- Não enfatizar a previsão do **número absoluto** de casos: o foco é prever o **momento** do surto,
-  com bibliografia explicando por que a magnitude de picos históricos é difícil de prever.
-- Trocar "municípios" por **mesorregiões** e justificar a agregação (granularidades diferentes
-  das duas bases e escolhas técnicas).
-- Justificar com bibliografia por que o clima teve menos impacto do que o esperado e mostrar o
-  valor do INMET como alternativa quando faltam dados do SINAN.
+- Foco em prever o **momento** do surto, não o número absoluto, com bibliografia sobre a dificuldade de prever a magnitude dos picos.
+- **Mesorregiões** no lugar de municípios, com a justificativa da agregação.
+- Justificar com bibliografia o efeito pequeno do clima e o INMET como alternativa ao SINAN.
 - Explicar o que cada hiperparâmetro faz.
 
-## 1. Desatualizado
+## Decisão da equipe (15/11/2026)
 
-### Em relação às decisões do orientador e à v4
+Os números da monografia vêm da rodada do Pedro (snapshot do SINAN usado em `a608385`). Uma reprodução com um snapshot mais recente mostrou que **as semanas finais de 2026 desse snapshot estavam incompletas** por atraso de notificação. Isso explica o R²_log baixo de 2026 (≈0,57) e puxa o agregado para baixo; 2024 e 2025 batem entre os dois snapshots. O texto já registra essa limitação. Atualizar o snapshot fica como opção futura.
 
-| Onde | Problema | Responsável |
-|---|---|---|
-| `informacoes.tex:6` | O título ainda diz "Municípios"; o texto todo é sobre mesorregiões. | Thiago |
-| `informacoes.tex:18-21` | Data da defesa e banca ainda com os textos de exemplo do template. | Thiago |
-| `metodologia.tex:4, 80-94` | Tudo descreve a v3: `rodar_v3.sh`, treino 2019–2022, 60.554 linhas e a tabela de divisão temporal. A v4 treina de 2001 a 2022, com aquecimento em 2000. | Pedro |
-| `metodologia.tex:120-126` e capítulo de resultados | Conflito de nomes A/B/C. No texto, A/B/C são conjuntos de atributos; na v4, são janelas de treino. Trocar por nomes descritivos, como "só SINAN / INMET bruto / INMET enriquecido" e "janela curta / série longa / série longa ponderada". | Pedro |
-| Resumo, abstract, `introducao.tex:118, 127` | A pergunta de pesquisa e o objetivo geral falam em prever o número de notificações; o foco agora é o momento do surto. Os números do resumo (R² 0,87, "cerca de metade", 39%) são da v3. | Thiago |
-| `conclusao.tex:21` | A limitação "o treino cobre quatro anos" deixa de valer com a série longa da v4. | Pedro |
-| `conclusao.tex:26` | A limitação "hiperparâmetros fixos" ignora que o Optuna foi testado na v4 e não foi adotado. | Pedro |
-| `metodologia.tex:51`, `resultados.tex:9` | A cobertura climática de 90,1% é da v3; com a série desde 2000 ela muda, porque a rede de estações era menor nos primeiros anos. | Pedro |
-| `sistema.tex` (capítulo inteiro) | Diz que a API e o Streamlit usam o modelo municipal antigo e que o painel é anterior ao reprocessamento. Hoje existem o dashboard da v4, o fluxo semanal e a sincronização com o HuggingFace. Revisar também a tabela de endpoints (`/predict/{municipio}`). | Pedro |
-| `cronograma.tex:20, 35` | Diz que a execução foi "até setembro de 2026"; faltam outubro e novembro (v4, dashboard, HuggingFace, Kaggle e revisão da monografia). | Pedro |
-| `conclusao.tex:27, 38` | "Sistemas desatualizados" e "automatizar a atualização semanal" aparecem como limitação e trabalho futuro, mas já foram feitos. | Pedro |
+---
 
-### Experimentos da v4 sem nenhuma menção no texto
+## 1. Concluído
 
-Série longa, peso de recência, curva de aprendizado, *drift* (PSI), Optuna e a nova
-classificação de risco. Responsável: **Pedro** (metodologia e resultados da v4).
+### Itens da revisão 1
 
-### Dependência: v4 com o INMET corrigido
+| Item | Onde foi resolvido |
+|---|---|
+| Título com "Mesorregiões" | PR #3 (Pedro) |
+| Metodologia descrevendo a v4 (janelas × atributos, 9 combinações, curva de aprendizado, Optuna, PSI) | PR #3 (Pedro) |
+| Limitações "treino de quatro anos" e "hiperparâmetros fixos" atualizadas | PR #3 (Pedro) |
+| Capítulo de sistema (dashboard v4, GitHub Actions, HuggingFace, Kaggle; API como legado) | PR #3 (Pedro) |
+| Cronograma até novembro de 2026 | PR #3 (Pedro) |
+| Introdução enxugada (parte clínica, números sem fonte, analogia da umidade) — itens 7 e 8 | PR #3 (Pedro) |
+| Seções repetidas do referencial fundidas (clima e dengue no Brasil; defasagens) | PR #3 (Pedro) |
+| Item 4: "objetivo" de defasagens ótimas removido | PR #3 (Pedro) |
+| Item 10: contagem da semana *t* (nota do `recorte.json` corrigida; não entra como atributo) | MODELO-PREVISAO `a608385` (Pedro) |
+| Item 1: DF 313 mil × 256 mil — na base do trabalho são 277 mil notificações de residentes em 2024; o teste soma 255 mil porque o alvo é *t*+4 | PR #4 (Thiago) |
+| Item 2: número único para 2024 (6,6 milhões de notificações) e diferença entre notificações e casos prováveis | PR #4 (Thiago) |
+| Item 3: dados globais e parte clínica citando a OMS (2025) no lugar de `naish2014climate` | PR #4 (Thiago) |
+| Item 5: temperaturas padronizadas no referencial | PR #4 (Thiago) |
+| Item 9: frase incompleta da tabela comparativa | PR #4 (Thiago) |
+| Pergunta de pesquisa e objetivos com foco no momento do surto | PR #3 (Pedro) e PR #4 (Thiago) |
+| Resumo e abstract só com números da v4 e foco no momento | PR #4 (Thiago) |
 
-Os dados climáticos da v4 (no repositório, no HuggingFace e nos notebooks do Kaggle) ainda
-foram gerados com o extrator antigo: a "umidade" é o ponto de orvalho, as temperaturas mínima
-e máxima estão trocadas, o "vento" é a rajada, e faltam 2009, 2020 e 2022 (cobertura de cerca
-de 65%). Os resultados **só com SINAN** são confiáveis; os que usam **clima** precisam ser
-refeitos depois de reprocessar o INMET com o código corrigido e rodar a v4 de novo. As seções
-que dependem disso estão marcadas com ⏳ na divisão abaixo.
+### Tarefas novas da divisão
 
-## 2. Inconsistências
+| Tarefa | Onde |
+|---|---|
+| Referencial: "Previsibilidade do Momento e da Magnitude dos Surtos" (Johansson et al. 2019; Reich et al. 2016) | PR #4 (Thiago) |
+| Referencial: "O Papel do Clima na Previsão de Curto Prazo" (Johansson et al. 2016; Reich et al. 2016; Lowe et al. 2016) | PR #4 (Thiago) |
+| Referencial: "Concept Drift em Séries Epidemiológicas Longas" | PR #3 (Pedro) |
+| Metodologia: escolha da escala espacial (distância até a estação, municípios por estação, tamanho da base) | PR #4 (Thiago) |
+| Metodologia: tabela de hiperparâmetros com a função de cada um | PR #4 (Thiago) |
+| Metodologia: métricas de momento (erro na semana do pico, acerto de direção) | PR #4 (Thiago) |
+| Baselines no teste da v4 e desempenho por ano (script 57, com os modelos salvos, sem retreino) | PR #4 (Thiago) + MODELO-PREVISAO PR #3 |
+| Resultados: seção "Antecipação do Momento dos Surtos" | PR #4 (Thiago) |
+| Resultados: contribuição do clima na v4 (23/27 UFs, 99/137 mesorregiões, walk-forward 0,809 × 0,803) | PR #4 (Thiago) |
+| Resultados: recorte do DF na v4 (tabela própria) | PR #4 (Thiago) |
+| Resultados v4: 9 combinações, curva de aprendizado, PSI, Optuna, walk-forward expandido, classificação, SHAP | PR #3 (Pedro) — ver pendências dos números |
+| Síntese e conclusão com números da v4 | PR #4 (Thiago), exceto os trechos marcados `[PENDENTE]` |
+| `gerar_figuras.py` e as duas figuras de baselines e série nacional na v4 | PR #4 (Thiago) |
+| `RASTREABILIDADE.md` apontando para `a608385`, com nomes de scripts corrigidos | PR #4 (Thiago) |
+| Notebooks do Kaggle com os hiperparâmetros do pipeline | MODELO-PREVISAO `2542185` (Pedro) |
 
-| # | Onde | Problema | Responsável |
-|---|---|---|---|
-| 1 | `introducao.tex:14` × `resultados.tex:241` | O DF teria **313.317 casos em 2024**, mas a seção do DF diz **256 mil notificações em todo o teste** (2024–2026). Os dois não podem estar certos, a menos que meçam coisas diferentes (município de notificação × residência, casos × notificações). Explicar ou corrigir. | Thiago |
-| 2 | `introducao.tex:10`, `referencial_teorico.tex:8`, resumo, `metodologia.tex:96`, `resultados.tex:78` | A magnitude de 2024 aparece de quatro formas: "6 milhões de casos prováveis no 1.º semestre", "mais de 6 milhões de casos prováveis", "cerca de 6,5 milhões de notificações" e 6,44 milhões. Escolher um termo (notificações ou casos prováveis) e explicar a diferença uma vez. | Thiago |
-| 3 | `introducao.tex:8` | Os dados de 2019 (5,2 milhões de casos) são atribuídos a `naish2014climate`, um artigo de 2014. Trocar a fonte (ex.: OMS). | Thiago |
-| 4 | `referencial_teorico.tex:20` | Diz que identificar as defasagens ótimas é "um dos objetivos específicos deste trabalho", mas esse objetivo não está na lista (`introducao.tex:131-143`). Sobra do TCC 1. | Thiago |
-| 5 | `introducao.tex:43`, `referencial_teorico.tex:16, 20, 102` | A incubação no ser humano aparece como "4 a 10 dias" e "4 a 7 dias". No mesmo parágrafo, a temperatura ótima é "25 a 30 °C" e o pico de transmissão é "perto de 24 °C". Padronizar com fonte. | Thiago |
-| 6 | `resultados.tex:160-161` | Na cegueira de dados, o cenário com atraso de 4 semanas sem clima (R² log 0,868) fica **acima** do cenário completo (0,859): remover informação melhorou o modelo. O texto não explica. Investigar (variação entre treinos, efeito de regularização) e comentar. | Thiago |
-| 7 | `introducao.tex:65, 73, 77, 81, 85, 89` | Números concretos sem citação: "até 40% com sintomas persistentes", "ocupação acima de 95%", "dezenas de óbitos", "estudos econômicos estimam", "R$ 500 a R$ 2.000 por caso", "R$ 5 bilhões", taxas maiores em regiões de IDH baixo. Citar ou remover. | Thiago |
-| 8 | `introducao.tex:97-99` | A analogia diz que o modelo alerta "antes que os casos clínicos comecem a aparecer" e usa umidade acima de 70% como exemplo. Os resultados mostram que o modelo depende principalmente da série de casos, e a "umidade" era justamente o erro de dados. | Thiago |
-| 9 | `referencial_teorico.tex:76` | Frase incompleta: "Baseado em características gerais e estudos comparativos típicos..." termina sem verbo principal e sem ponto. | Thiago |
-| 10 | `metodologia.tex:103` × `config/recorte.json` | O texto diz que a contagem da semana *t* não é atributo, o que bate com o `feature_schema` da v3 e da v4. Mas a configuração tem `"incluir_notificacoes_atual": true`, com nota dizendo que ela passou a ser incluída. Confirmar qual vale, porque isso também explica por que a persistência vence. | Pedro |
+---
 
-## 3. Repetições
+## 2. Pendente
 
-| Assunto | Vezes | Onde | Sugestão |
-|---|---|---|---|
-| Erro de mapeamento do INMET e a "umidade de 15,7" | cerca de 8 | Resumo, abstract, introdução (111, 134, 151), metodologia (tabela e linha 76), resultados (linha 19 e tabela), conclusão (16), síntese (270) | Detalhar só na metodologia; nos outros lugares, mencionar de passagem. |
-| Defasagens entre clima e casos | 2 seções | `referencial_teorico.tex:20` e seção "Defasagens Temporais" (`:100-102`) | Fundir em uma seção. |
-| Clima e dengue no Brasil | 2 seções | "Relação entre Variáveis Climáticas" (`:14-18`) e "Estudos Sobre Clima e Dengue no Brasil" (`:94-98`), com as mesmas 3 citações | Fundir em uma seção. |
-| Explicação do XGBoost | 4 vezes | Introdução (101), referencial (61-63, figura, 118-126), tabela comparativa | Manter a explicação técnica só na seção de gradient boosting. |
-| Árvores não extrapolam e treino em log | 4 vezes | Referencial (126, 160), resultados (111), conclusão (8) | Explicar no referencial e só retomar nos resultados. |
-| Persistência como referência forte | 3 vezes | Introdução (101), referencial (112-116), resultados | Reduzir na introdução. |
-| Cegueira de dados "otimista" | 3 vezes | Metodologia (162), resultados (176), conclusão (23) | Manter na metodologia e nas limitações. |
-| "Alertas devem vir da regressão" | 3 vezes | Resultados (236), sistema (36), conclusão (12) | Manter nos resultados e na conclusão. |
-| Descrição clínica da dengue | longa | Cerca de 15 parágrafos de clínica e impacto social na introdução, herdados do TCC 1 | Resumir para 3 ou 4 parágrafos com fonte. |
-
-## 4. Divisão dos ajustes
-
-⏳ = depende da v4 rodada com o INMET corrigido.
-
-### Thiago
-
-- **Título, resumo e abstract:** trocar "municípios" por "mesorregiões" e reescrever com foco no momento do surto. ⏳ só nos números.
-- **Introdução:** reformular problema, pergunta e objetivos com foco no momento do surto; explicar o que é mesorregião e por que foi usada; resumir a parte clínica; corrigir os itens 1, 2, 3, 7 e 8 das inconsistências.
-- **Referencial:** nova subseção com bibliografia sobre por que é difícil prever o tamanho dos picos; nova subseção sobre clima fraco no curto prazo e o INMET como alternativa quando falta SINAN; fundir as seções repetidas; corrigir os itens 4, 5 e 9.
-- **Metodologia (dados):** justificar a agregação por mesorregião (5.570 municípios × cerca de 700 estações) e manter as correções do INMET.
-- **Metodologia (hiperparâmetros):** tabela explicando o que cada hiperparâmetro faz e por que tem aquele valor.
-- **INMET corrigido:** reprocessar o INMET de 2000 a 2017 com o código corrigido e entregar os dados ao Pedro.
-- **Cegueira de dados e métricas de momento na v4** (erro na semana do pico, acerto de direção).
-- **Resultados:** comparação com os baselines (momento × tamanho), clima e cegueira de dados (inclui o item 6), recorte do DF. ⏳
-- **Conclusão:** contribuições e limitações.
-- **Fechamento:** figuras, `RASTREABILIDADE.md`, compilação final e PR.
+Prioridade: **A** = bloqueia a entrega ou gera inconsistência visível; **B** = importante; **C** = acabamento.
 
 ### Pedro
 
-- **Referencial:** subseção sobre séries longas e mudança dos dados ao longo do tempo (*drift*).
-- **Metodologia (desenho da v4):** janelas de treino × conjuntos de atributos e divisão treino/validação/teste, com nomes descritivos no lugar de A/B/C.
-- **Metodologia (avaliação):** *walk-forward*, curva de aprendizado, Optuna, PSI e classificação em 4 faixas de risco.
-- **Rodar a v4 de novo** com o INMET corrigido, com os baselines no pipeline; confirmar o item 10.
-- **Resultados da v4:** tabela principal, curva de aprendizado, *drift*, Optuna (por que não foi adotado), classificação, SHAP e *walk-forward*. ⏳
-- **Figuras da v4.** ⏳
-- **Sistema:** atualizar para o dashboard da v4 (fluxo semanal e sincronização com o HuggingFace).
-- **Cronograma:** incluir outubro e novembro.
-- **Conclusão:** limitações e trabalhos futuros técnicos (hiperparâmetros, outras janelas).
-- **Notebooks do Kaggle:** usar os mesmos hiperparâmetros do pipeline, ajustar o baseline sazonal (mesma semana do ano anterior) e corrigir o resumo, que hoje diz que o XGBoost supera os baselines em todas as escalas.
+| # | Prioridade | Onde | O que fazer |
+|---|---|---|---|
+| P1 | A | `resultados.tex:4` | Abertura do capítulo: teste com **16.029** linhas (não 16.988); incluir a seção de momento na lista de seções. |
+| P2 | A | `resultados.tex:6-40` | "Base de modelagem" é da v3 (60.554 linhas, 2018–2026, cobertura 90,1%, figura de cobertura v3). Na v4: 188.512 linhas, 2000–2026, cobertura de 72,1% (`42_integration_report.json`); usar `fig_v4_inmet_coverage.png`. A tabela antes/depois e o parágrafo da linha 19 usam "modelo A/C" com o sentido da v3: rotular explicitamente como v3 (efeito das correções) ou refazer. |
+| P3 | A | `resultados.tex:376-408`, `tabelas/tab_v4_classification.tex` | Classificação v4 com números da rodada anterior à correção do INMET. Relatório 54 atual: A enriquecido **0,501** (AUC 0,780), B **0,585** (0,835), C **0,583** (0,836); ganho da série longa **+0,084** (não +0,094). O resumo e a conclusão já usam 0,50 → 0,59. |
+| P4 | A | `resultados.tex:228-250` | Classificação da v3 (persistência 0,622, "XGBoost A/B/C" no sentido de atributos) duplicada com a seção v4. Fundir numa só seção da v4. |
+| P5 | A | `resultados.tex:191-226` e `410-422` | SHAP aparece duas vezes. A figura `fig_v3_shap_beeswarm` e a tabela de limiares (temperatura média 21 °C, precipitação 0,11 mm/h etc.) são da v3. Na v4, a primeira variável climática continua sendo a temperatura mínima (20.ª), mas a segunda passa a ser a umidade (média de 4–8 semanas, 22.ª). Refazer os limiares na v4 — dá para fazer com os modelos salvos, sem retreino — e fundir as duas seções. |
+| P6 | B | `resultados.tex` (Optuna), `49_optuna_report.json` | O Optuna ainda é da rodada de 04/11, antes da correção do INMET. Rodar de novo ou avisar no texto. |
+| P7 | B | `metodologia.tex:25, 57, 59, 127` | Tabela de etapas cita "três variantes" e *data blindness*; conferência com a Gold de "2018 a 2026" (é 2000–2026); cobertura de 90,1% (v4: 72,1%); proporções de classes 52,9% / 12,1% (v4, treino B: 51,9% / 9,8%). |
+| P8 | B | HuggingFace | Aprovar o acesso do Thiago ao dataset `dengue-tcc2-data` (desbloqueia T1 e T2). |
+| P9 | B | GitHub | Revisar e fazer o merge de MODELO-PREVISAO PR #3 (script 57) e TCC2-DOCS PR #4. |
+| P10 | C | `tabelas/`, `figuras/resultados_v4/` | Seis tabelas geradas e quatro figuras (`gain_comparison`, `r2_by_year`, `inmet_coverage`, `confusion_matrix`) não são usadas no texto. Usar ou remover. |
+| P11 | C | `bibliografia.bib` | Conferir `yurdakul2020statistical` (autores e número da revista parecem incompletos). |
+| P12 | C | Kaggle | Confirmar que o notebook de treino usa o baseline sazonal "mesma semana do ano anterior" e que o resumo não diz que o XGBoost vence em todas as escalas. |
 
-### Regras
+### Thiago
 
-- Cada um edita só as próprias seções; nas seções divididas, cada um fica com subseções separadas.
-- Os números do texto saem sempre dos relatórios do pipeline (`rodar_v4.sh`), não do Kaggle.
-- O que não tem ⏳ pode começar já.
-- Prioridade para a banca: item 1 (DF, 313 mil × 256 mil) e item 6 (cegueira de dados).
+| # | Prioridade | Onde | O que fazer |
+|---|---|---|---|
+| T1 | A | `resultados.tex:160-190`, síntese, conclusão | Cegueira de dados na v4 (script 56, já pronto): substituir a tabela e a figura da v3 e remover os três `[PENDENTE]`. Depende do P8. Numa reprodução com outro snapshot, o resultado estranho da v3 (atraso de 4 semanas acima do completo) não se repetiu. |
+| T2 | A | `conclusao.tex:12` | Alertas por limiar na v4 (regressão × persistência × classificador, script 56). Depende do P8. Numa reprodução com outro snapshot, os alertas derivados da regressão superaram a persistência (F1 0,72 × 0,66), o que inverteria a conclusão da v3. |
+| T3 | B | `informacoes.tex:18-20` | Data da defesa e banca. |
+| T4 | C | Fechamento | Depois dos merges: atualizar `RASTREABILIDADE.md` (commit de merge), rodar `gerar_figuras.py`, compilar e conferir que não restou nenhum `[PENDENTE]`. |
+
+### Juntos
+
+| # | Prioridade | O que fazer |
+|---|---|---|
+| J1 | B | Revisão final de repetições (seção 3) depois que o capítulo 4 estiver só com a v4. |
+| J2 | C | Revisão de português e de formatação do PDF final (inclusive duas caixas largas demais: o `\texttt` da seção SHAP v4 e a URL do capítulo de sistema). |
+
+---
+
+## 3. Repetições que ainda restam
+
+| Assunto | Onde | Sugestão |
+|---|---|---|
+| SHAP | `resultados.tex` "Interpretação do Modelo" e "SHAP v4" | Uma seção só (P5). |
+| Classificação | `resultados.tex` "Classificação do Nível de Risco" (v3) e "Classificação em Quatro Faixas de Risco (v4)" | Uma seção só (P4). |
+| Walk-forward | Clima (texto) e "Walk-Forward Expandido (v4)" | Já resolvido no texto do clima, que remete à seção v4; manter assim. |
+| Erro de mapeamento do INMET | Resumo, abstract, introdução, objetivos, contribuições, metodologia (tabela e parágrafo), resultados (tabela antes/depois), conclusão | Detalhar só na metodologia; nos demais, uma frase. |
+| Árvores não extrapolam e treino em log | Referencial (`sec:xgboost` e considerações finais), resultados, conclusão | Explicar no referencial e só retomar nos resultados. |
+| Cegueira de dados "otimista" | Metodologia, resultados, conclusão | Manter na metodologia e nas limitações. |
+
+---
+
+## 4. Divisão das tarefas restantes
+
+**Pedro:** P1 a P12, ou seja, o capítulo 4 só com a v4, a classificação, o SHAP, o Optuna, os detalhes da metodologia, o acesso ao HuggingFace e os merges.
+
+**Thiago:** T1 a T4 — cegueira de dados e alertas na v4 (assim que o acesso for aprovado), banca e fechamento.
+
+**Regras:**
+- Os números do texto saem sempre de relatórios versionados no MODELO-PREVISAO (scripts 40–57), nunca do Kaggle.
+- Qualquer número novo entra também no `RASTREABILIDADE.md`.
+- Nada de `[PENDENTE]` no PDF entregue ao orientador.
