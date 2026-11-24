@@ -56,6 +56,9 @@ Os dados corrigidos estão disponíveis em:
 | Métricas de momento: pico a até 2 semanas, erro mediano e médio (179 temporadas), acerto de direção (10.367 semanas) | mesmo relatório 57 (`momento_pico`, `direcao`) |
 | Recorte do DF (117 semanas, Tabela do DF) e 277 mil notificações em 2024 | mesmo relatório 57 (`distrito_federal`) |
 | Clima melhora em 23 de 27 UFs e 99 de 137 mesorregiões; série longa melhora 118 mesorregiões | `models/regression_v4/metrics_por_uf_v4.csv`, `metrics_por_mesorregiao_v4.csv`; contagem em `monografia/dados/fatos_derivados.json` |
+| Blindness v4: Δ R²_log completo +0,007, atraso 4w +0,007, atraso 8w +0,006, só clima 0,399 | `data/model_ready_v4/56_complementos_v4_report.json` (`blindness_B`) |
+| Alertas v4: B_enriq F1 macro 0,717, persistência 0,650, classificador 0,585 | mesmo relatório 56 (`alertas_por_limiar`) |
+| Momento v4: B_enriq pico ±2sem 48,6%, erro médio −0,44 sem; direção 82,0% | mesmo relatório 56 (`momento`, `direcao`) |
 
 ## Figuras
 
@@ -105,10 +108,10 @@ Os dados corrigidos estão disponíveis em:
 | `scripts/53_generate_tcc_outputs.py` | Geração de figuras e tabelas para a monografia |
 | `scripts/54_train_classification_v4.py` | Classificação em níveis de risco |
 | `scripts/55_build_dashboard_v4.py` | Atualização do dashboard Streamlit |
+| `scripts/56_complementos_v4.py` | Baselines com retreino, blindness (4 cenários), alertas por limiar, momento/direção, variação entre sementes |
 | `scripts/57_avaliacao_modelos_salvos_v4.py` | Baselines, métricas por ano, métricas de momento e recorte do DF com os modelos salvos (sem retreino) |
 
 ## Pendências
 
-- Optuna (`49_optuna_report.json`) ainda é da rodada de 04/11, anterior à correção do INMET.
-- Simulação de atraso na notificação (data blindness) e limiares de alerta na v4: dependem do treino (`splits_*/train.parquet`, no HuggingFace).
 - `scripts/57_avaliacao_modelos_salvos_v4.py` precisa ser commitado no MODELO-PREVISAO para que o relatório 57 fique versionado.
+- Data de defesa e membros da banca: `informacoes.tex` linhas 18-20 (dependem do orientador).

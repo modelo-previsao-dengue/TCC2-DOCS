@@ -54,9 +54,9 @@ No outro extremo, a agregação por unidade federativa reduziria o problema a 27
 
 \subsection{Agregação e Integração}
 
-A série epidemiológica de cada mesorregião é a \textbf{soma} das contagens dos seus municípios; as proporções e os índices clínicos foram agregados por média ponderada pelo número de notificações. A série climática de cada mesorregião é a \textbf{média} das estações nela localizadas. A soma das notificações por mesorregião foi conferida contra o total da camada Gold em cada ano, com diferença nula em todos os anos de 2018 a 2026.
+A série epidemiológica de cada mesorregião é a \textbf{soma} das contagens dos seus municípios; as proporções e os índices clínicos foram agregados por média ponderada pelo número de notificações. A série climática de cada mesorregião é a \textbf{média} das estações nela localizadas. A soma das notificações por mesorregião foi conferida contra o total da camada Gold em cada ano, com diferença nula em todos os anos de 2000 a 2026.
 
-As duas séries foram unidas pela chave (mesorregião, ano epidemiológico, semana epidemiológica), mantendo todas as semanas epidemiológicas e deixando ausentes as variáveis climáticas das semanas sem estação ativa. A cobertura climática resultante foi de 90,1\% das mesorregião-semanas, variando de 80,0\% (2026) a 97,8\% (2019) entre os anos, como detalhado no Capítulo~\ref{cap:resultados}.
+As duas séries foram unidas pela chave (mesorregião, ano epidemiológico, semana epidemiológica), mantendo todas as semanas epidemiológicas e deixando ausentes as variáveis climáticas das semanas sem estação ativa. A cobertura climática resultante foi de 72,1\% das mesorregião-semanas no conjunto completo (2000 a 2026), inferior a 25\% nos primeiros anos da rede automática e acima de 80\% a partir de 2008, com máxima de 97,8\% em 2019, como detalhado no Capítulo~\ref{cap:resultados}.
 
 \section{Auditoria e Correção da Qualidade dos Dados}
 \label{sec:correcoes}
@@ -124,7 +124,7 @@ Foram construídos 266 atributos, organizados em cinco grupos:
 
 O alvo de regressão é a contagem de notificações da mesorregião na semana $t+4$. O modelo foi treinado sobre $\log(1+y)$, e as previsões foram revertidas por $e^{\hat{z}}-1$, limitadas a zero.
 
-Para a classificação, cada semana recebeu um de quatro níveis de risco (baixo, moderado, alto e muito alto), definidos pelos percentis 50, 75 e 90 das notificações em $t+4$ de cada mesorregião, calculados apenas no período de treino. Os mesmos limiares foram aplicados à validação e ao teste. Na série completa, 52,9\% das mesorregião-semanas ficaram no nível baixo e 12,1\% no nível muito alto.
+Para a classificação, cada semana recebeu um de quatro níveis de risco (baixo, moderado, alto e muito alto), definidos pelos percentis 50, 75 e 90 das notificações em $t+4$ de cada mesorregião, calculados apenas no período de treino. Os mesmos limiares foram aplicados à validação e ao teste. No treino da série longa (variante~B), 51,9\% das mesorregião-semanas ficaram no nível baixo, 23,9\% no moderado, 14,4\% no alto e 9,8\% no muito alto.
 
 \section{Modelos}
 

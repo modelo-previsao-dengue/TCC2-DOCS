@@ -2,12 +2,123 @@
 
 \partapendices
 
-\chapter{Primeiro Apêndice}
+\chapter{Comparação com a Pipeline Anterior às Correções (v3)}
+\label{ap:comparacao_v3}
 
-Texto do primeiro apêndice.
+Este apêndice apresenta os resultados obtidos com a pipeline anterior às correções de dados descritas na Seção~\ref{sec:correcoes}. Na versão anterior (v3), a janela de treino cobria 2019 a 2022 (4~anos), e os rótulos ``A'', ``B'' e ``C'' designavam \textbf{conjuntos de atributos} (respectivamente, só SINAN, SINAN + INMET bruto e SINAN + INMET enriquecido), diferentemente da v4, em que designam \textbf{variantes de janela temporal} (4~anos, 22~anos e 22~anos com peso de recência). Os números abaixo servem como referência para dimensionar o efeito das correções.
 
-\chapter{Segundo Apêndice}
+\section{Efeito das Correções sobre os Resultados de Regressão}
 
-Texto do segundo apêndice.
+A Tabela~\ref{tab:antes_depois} compara a mesma pipeline executada antes e depois das correções, com o mesmo conjunto de teste. As correções melhoraram o desempenho de todas as variantes, e duas conclusões se inverteram. Primeiro, o clima passou a ajudar de forma significativa nos cenários de atraso na notificação, nos quais antes a diferença era negativa e não significativa. Segundo, a variável climática mais associada aos casos deixou de ser a ``umidade'', cujo limiar de 15,7\% era, na verdade, uma temperatura de ponto de orvalho em graus Celsius, e passou a ser a temperatura mínima, com limiar fisicamente plausível.
+
+\begin{table}[htb]
+\centering
+\caption{Resultados da pipeline mesorregional antes e depois das correções de dados}
+\label{tab:antes_depois}
+\small
+\begin{tabular}{|p{0.44\textwidth}|c|c|}
+\hline
+\textbf{Indicador} & \textbf{Antes} & \textbf{Depois} \\ \hline
+$R^2_{\log}$ do modelo A (só SINAN) & 0,843 & 0,859 \\ \hline
+$R^2_{\log}$ do modelo C (SINAN + INMET enriquecido) & 0,853 & 0,870 \\ \hline
+Ganho do clima com atraso de 4 semanas ($\Delta R^2_{\log}$) & $-$0,0006 ($p=0{,}60$) & +0,0047 ($p<0{,}001$) \\ \hline
+Ganho do clima com atraso de 8 semanas ($\Delta R^2_{\log}$) & $-$0,0013 ($p=0{,}22$) & +0,0035 ($p<0{,}001$) \\ \hline
+\textit{Walk-forward}: janelas em que C supera A & 3 de 5 & 4 de 4 \\ \hline
+Melhor variável climática no SHAP (posição) & pressão (12.ª) & temp. mínima (20.ª) \\ \hline
+Limiar climático de destaque & ``umidade'' 15,7 & temp. mínima 13,8~$^\circ$C \\ \hline
+\end{tabular}
+\fonte{Elaboração própria. Antes: relatórios do PR \#1 do repositório MODELO-PREVISAO; depois: pipeline reprocessada. Os rótulos A e C referem-se a conjuntos de atributos na v3.}
+\end{table}
+
+\section{Classificação do Nível de Risco (v3)}
+
+Na pipeline v3, com janela curta de treino (2019--2022), os classificadores XGBoost foram avaliados com os mesmos baselines. Nesta versão, A, B e C designam conjuntos de atributos: só SINAN, SINAN + INMET bruto e SINAN + INMET enriquecido, respectivamente.
+
+Na classificação em quatro níveis de risco (Tabela~\ref{tab:risco_v3}), o XGBoost dedicado alcançou F1 macro de 0,49 e AUC de 0,77 com clima, contra 0,47 e 0,75 sem clima. Todos os classificadores, no entanto, ficaram abaixo da simples aplicação dos limiares de risco à persistência, que obteve F1 macro de 0,62 e foi superior em todas as classes. As classes intermediárias (moderado e alto) foram as mais difíceis para todos os métodos.
+
+\begin{table}[htb]
+\centering
+\caption{Classificação do nível de risco no conjunto de teste --- pipeline v3 (F1)}
+\label{tab:risco_v3}
+\small
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{Modelo} & \textbf{Macro} & \textbf{Baixo} & \textbf{Moderado} & \textbf{Alto} & \textbf{Muito alto} \\ \hline
+Persistência & \textbf{0,622} & \textbf{0,837} & \textbf{0,481} & \textbf{0,416} & \textbf{0,755} \\ \hline
+Média móvel (4 semanas) & 0,578 & 0,810 & 0,431 & 0,372 & 0,700 \\ \hline
+XGBoost A (só SINAN) & 0,470 & 0,724 & 0,286 & 0,263 & 0,609 \\ \hline
+XGBoost B (+ INMET bruto) & 0,491 & 0,740 & 0,323 & 0,268 & 0,632 \\ \hline
+XGBoost C (+ INMET enriquecido) & 0,491 & 0,736 & 0,299 & 0,284 & 0,643 \\ \hline
+\end{tabular}
+\fonte{Elaboração própria. Os rótulos A, B e C referem-se a conjuntos de atributos na v3.}
+\end{table}
+
+O experimento complementar chegou ao mesmo resultado com uma definição de surto diferente, binária e baseada no canal endêmico: o classificador dedicado obteve F1 de 0,72 a 0,74 para a classe surto, abaixo da persistência do rótulo (0,85). Aplicar o limiar do canal endêmico à previsão contínua da regressão, em vez de treinar um classificador, alcançou 0,83, próximo à persistência. Os dois resultados indicam que, para gerar alertas, é preferível derivá-los da previsão numérica, e não treinar um classificador separado.
+
+\section{Interpretação do Modelo --- SHAP (v3)}
+
+A análise SHAP da variante com clima enriquecido na v3 (Figura~\ref{fig:shap_v3}) mostra que a previsão é dominada pela própria série epidemiológica: as notificações da semana anterior respondem sozinhas por uma contribuição média (1,15) mais de quatro vezes maior que a segunda variável, a codificação cíclica da semana ($\cos$: 0,26). A diferença de notificações entre semanas ($0{,}17$), a contagem de confirmados/prováveis ($0{,}12$) e a média móvel de 2 a 4~semanas ($0{,}10$) completam as cinco mais importantes. Nenhuma variável climática aparece entre as dez mais importantes; a primeira é a temperatura mínima da semana, na 20.ª posição.
+
+\begin{figure}[htb]
+    \centering
+    \caption{Valores SHAP das 20 variáveis mais importantes do modelo C --- pipeline v3}
+    \includegraphics[width=0.7\textwidth]{figuras/resultados/fig_v3_shap_beeswarm.png}
+    \label{fig:shap_v3}
+    \fonte{Elaboração própria.}
+\end{figure}
+
+Os limiares estimados para as variáveis climáticas (Tabela~\ref{tab:limiares_v3}) são coerentes com a biologia do vetor. A contribuição da temperatura passa a ser positiva acima de 13,8~$^\circ$C de mínima e de 21,0~$^\circ$C de média semanal, valores próximos do limite inferior de transmissão descrito na literatura. A precipitação média na janela de 2 a 4 semanas e o número de dias de chuva nessa janela aumentam a previsão, o que corresponde ao intervalo de desenvolvimento do vetor. A pressão atmosférica tem efeito negativo, provavelmente como indicador indireto de altitude e de massas de ar mais secas e frias.
+
+\begin{table}[htb]
+\centering
+\caption{Limiares climáticos estimados pela análise SHAP (modelo C, v3) e efeito sobre a previsão acima do limiar}
+\label{tab:limiares_v3}
+\small
+\begin{tabular}{|p{0.47\textwidth}|c|r|c|}
+\hline
+\textbf{Variável} & \textbf{Posição} & \textbf{Limiar} & \textbf{Efeito} \\ \hline
+Temperatura mínima (semana $t$) & 20 & 13,8~$^\circ$C & aumenta \\ \hline
+Temperatura média (semana $t$) & 21 & 21,0~$^\circ$C & aumenta \\ \hline
+Precipitação média, média de 2 a 4 semanas & 22 & 0,11~mm/h & aumenta \\ \hline
+Radiação média, média de 4 a 8 semanas & 23 & 1.317~kJ/m$^2$ & aumenta \\ \hline
+Pressão média, 8 semanas antes & 25 & 992~hPa & reduz \\ \hline
+Pressão média, média de 4 a 8 semanas & 27 & 981~hPa & reduz \\ \hline
+Dias de chuva, média de 2 a 4 semanas & 28 & 2,1 dias & aumenta \\ \hline
+Precipitação acumulada, média de 2 a 4 semanas & 29 & 16,1~mm & aumenta \\ \hline
+Temperatura mínima, média de 2 a 4 semanas & 30 & 15,3~$^\circ$C & aumenta \\ \hline
+\end{tabular}
+\fonte{Elaboração própria. Os rótulos referem-se à pipeline v3 (janela curta).}
+\end{table}
+
+\section{Simulação de Atraso na Notificação (v3)}
+
+Os números desta seção são da pipeline v3 (janela curta de 2019 a 2022). Os resultados atualizados com a v4 estão no Capítulo~\ref{cap:resultados}.
+
+A Tabela~\ref{tab:blindness_v3} e a Figura~\ref{fig:blindness_v3} apresentam os cenários de atraso na notificação na v3. Quando as defasagens recentes de notificações são removidas, o clima continua acrescentando informação, e o ganho é significativo com atraso de 4 semanas (+0,0047) e de 8 semanas (+0,0035). No cenário extremo, sem nenhum atributo epidemiológico, o modelo sem clima fica sem nenhuma variável informativa e não tem capacidade preditiva ($R^2_{\log}=-0{,}011$), enquanto as variáveis climáticas sozinhas explicam 39\% da variância em escala logarítmica.
+
+\begin{table}[htb]
+\centering
+\caption{Ganho do clima em cenários de atraso na notificação --- pipeline v3 ($R^2_{\log}$)}
+\label{tab:blindness_v3}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Cenário} & \textbf{Sem clima} & \textbf{Com clima} & \textbf{$\Delta$} & \textbf{$p$} \\ \hline
+Completo & 0,859 & 0,870 & +0,011 & $<0{,}001$ \\ \hline
+Atraso de 4 semanas & 0,868 & 0,873 & +0,005 & $<0{,}001$ \\ \hline
+Atraso de 8 semanas & 0,865 & 0,869 & +0,004 & $<0{,}001$ \\ \hline
+Só clima & $-$0,011 & 0,390 & +0,401 & $<0{,}001$ \\ \hline
+\end{tabular}
+\fonte{Elaboração própria. Pipeline v3 (janela curta, 2019--2022).}
+\end{table}
+
+\begin{figure}[htb]
+    \centering
+    \caption{$R^2_{\log}$ com e sem clima nos cenários de atraso na notificação --- pipeline v3}
+    \includegraphics[width=0.9\textwidth]{figuras/resultados/fig_v3_blindness_comparison.png}
+    \label{fig:blindness_v3}
+    \fonte{Elaboração própria.}
+\end{figure}
+
+Esses resultados devem ser lidos com a limitação apontada na metodologia: os cenários de atraso removem as defasagens de notificações, mas mantêm as contagens agregadas da semana $t$, como casos confirmados ou prováveis, o que explica por que o desempenho quase não cai. Uma simulação mais realista do atraso tenderia a reduzir o desempenho sem clima e a aumentar o valor relativo das variáveis climáticas.
 
 \end{apendicesenv}
