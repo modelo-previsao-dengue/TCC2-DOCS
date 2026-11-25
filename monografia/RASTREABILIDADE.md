@@ -64,13 +64,13 @@ Os dados corrigidos estão disponíveis em:
 
 | Figura | Origem |
 |---|---|
-| `figuras/resultados/fig_baselines_vs_xgboost.png`, `fig_serie_nacional_teste.png` | `monografia/scripts/gerar_figuras.py` (lê o relatório 57) |
+| `figuras/resultados/fig_baselines_vs_xgboost.png`, `fig_serie_nacional_teste.png` | `monografia/scripts/gerar_figuras.py` (lê o relatório 57). `fig_baselines_vs_xgboost.png` não é usada desde 25/11: substituída por `resultados/fig_baselines_v4.png` |
 | `fig_v4_variante_comparison.png` | `scripts/53_generate_tcc_outputs.py` (não usada desde 25/11: substituída por `resultados/fig_variantes.png`) |
 | `fig_v4_r2_by_year.png` | `scripts/53_generate_tcc_outputs.py` |
 | `fig_v4_walkforward.png` | `scripts/53_generate_tcc_outputs.py` (não usada desde 25/11: substituída por `resultados/fig_walkforward.png`) |
 | `fig_v4_learning_curve.png` | `scripts/53_generate_tcc_outputs.py` (não usada desde 25/11: substituída por `resultados/fig_curva_aprendizado.png`) |
 | `fig_v4_data_drift_psi.png` | `scripts/53_generate_tcc_outputs.py` (não usada desde 25/11: substituída por `resultados/fig_psi_por_ano.png`) |
-| `fig_v4_shap_comparison.png` | `scripts/53_generate_tcc_outputs.py` |
+| `fig_v4_shap_comparison.png` | `scripts/53_generate_tcc_outputs.py` (não usada desde 25/11: não é o modelo realista; substituída por `resultados/fig_shap_realista.png`) |
 | `fig_v4_cls_f1_comparison.png` | `scripts/53_generate_tcc_outputs.py` (não usada desde 25/11: valores anteriores ao relatório 54 atual; substituída por `resultados/fig_f1_por_classe.png`) |
 | `fig_v4_confusion_matrix.png` | `scripts/53_generate_tcc_outputs.py` |
 | `fig_v4_delta_mesorregiao_B_vs_A.png` | `scripts/53_generate_tcc_outputs.py` (não usada desde 25/11: valores anteriores às correções) |
@@ -83,6 +83,8 @@ Os dados corrigidos estão disponíveis em:
 | `resultados/fig_variantes.png` | `monografia/scripts/gerar_figuras.py --so-novas`, a partir de `data/model_ready_v4/46_regression_v4_report.json` |
 | `resultados/fig_walkforward.png` | `monografia/scripts/gerar_figuras.py --so-novas`, a partir de `data/model_ready_v4/47_walkforward_v4_report.json` |
 | `resultados/fig_f1_por_classe.png` | `monografia/scripts/gerar_figuras.py --so-novas`, a partir de `data/model_ready_v4/54_classification_v4_report.json` |
+| `resultados/fig_baselines_v4.png` | `monografia/scripts/gerar_figuras.py --so-novas`, a partir dos relatórios 57, 58 e 59 em `data/model_ready_v4/` (baselines ingênuos, XGBoost realista, climatologia e Ridge) |
+| `resultados/fig_shap_realista.png` | `monografia/scripts/gerar_figuras.py --so-novas`, a partir de `data/model_ready_v4/58_vazamento_temporal_report.json` (`shap_top10` dos modelos completo e realista) |
 
 ## Tabelas geradas
 

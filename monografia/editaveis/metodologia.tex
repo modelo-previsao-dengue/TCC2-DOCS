@@ -84,7 +84,7 @@ O primeiro defeito tem consequência direta sobre a interpretação: em versões
 
 \section{Série de Modelagem e Divisão Temporal}
 
-A série completa contém as 137~mesorregiões em todas as semanas epidemiológicas de 2000 a 2026 (188.512~linhas mesorregião-semana). O primeiro ano de cada variante é utilizado apenas para o aquecimento das defasagens, e as últimas semanas de 2026, sem alvo disponível em $t+4$, são descartadas. A divisão foi feita por ano epidemiológico; a validação foi utilizada para a parada antecipada, e o teste não foi utilizado em nenhuma decisão de modelagem.
+A série completa contém as 137~mesorregiões em todas as semanas epidemiológicas de 2000 a 2026 (188.512~linhas mesorregião-semana). O primeiro ano de cada variante é utilizado apenas para o aquecimento das defasagens, e as últimas semanas de 2026, sem alvo disponível em $t+4$, são descartadas. A divisão foi feita por ano epidemiológico. A validação foi utilizada para a parada antecipada do XGBoost e para a escolha da penalidade do Ridge (Seção~\ref{sec:met_referencias}). O mesmo período de teste serviu a todas as análises deste trabalho, inclusive à comparação com a pipeline anterior às correções, e as variantes~B e~C foram definidas depois de conhecidos os resultados da variante~A; essa reutilização do teste é tratada como limitação (Seção~\ref{sec:limitacoes}).
 
 O experimento~v4 treinou três \textbf{variantes de janela temporal}, todas com o mesmo conjunto de teste e validação (Tabela~\ref{tab:divisao_temporal_v4}):
 
@@ -108,16 +108,19 @@ A variante~A reproduz a divisão da v3 (4~anos de treino); a variante~B usa toda
 O conjunto de teste inclui 2024, ano da maior epidemia de dengue registrada no Brasil, com cerca de 6,6 milhões de notificações. Nenhum ano do treino chegou perto dessa magnitude: o maior deles foi 2015, com cerca de 2,4 milhões, na série longa, e 2019, com cerca de 2,3 milhões, na janela curta. O teste funciona, portanto, como o ``teste de estresse'' previsto no TCC~1: avalia o modelo em anos típicos (2025 e 2026) e em um evento fora da distribuição de treino (2024).
 
 \section{Engenharia de Atributos}
+\label{sec:atributos}
 
 Foram construídos 266 atributos, organizados em cinco grupos:
 
 \begin{itemize}
-    \item \textbf{Epidemiológicos (110):} as contagens, proporções e índices clínicos da semana $t$ descritos na Seção~\ref{sec:sinan}; defasagens das notificações de 1 a 8 semanas; médias das defasagens nas janelas de 2 a 4 e de 4 a 8 semanas; diferença e variação percentual em relação à semana anterior; e a codificação cíclica da semana do ano (seno e cosseno). A contagem de notificações da própria semana $t$ não foi incluída como atributo, embora a de casos confirmados ou prováveis e as defasagens a partir de $t-1$ o sejam.
+    \item \textbf{Epidemiológicos (110):} as contagens, proporções e índices clínicos da semana $t$ descritos na Seção~\ref{sec:sinan}; defasagens das notificações de 1 a 8 semanas; médias das defasagens nas janelas de 2 a 4 e de 4 a 8 semanas; diferença e variação percentual em relação à semana anterior; e a codificação cíclica da semana do ano (seno e cosseno). Nesse conjunto, a contagem de notificações da própria semana $t$ não entra como atributo.
     \item \textbf{Climáticos brutos (12):} as doze variáveis semanais da semana $t$.
     \item \textbf{Defasagens climáticas (96):} as doze variáveis defasadas de 1 a 8 semanas.
     \item \textbf{Médias móveis biológicas (24):} médias das defasagens de cada variável nas janelas de 2 a 4 semanas (desenvolvimento do vetor) e de 4 a 8 semanas (ciclo completo com incubação), conforme a Figura~\ref{fig:defasagens_temporais}.
     \item \textbf{Anomalias climáticas (24):} para cada variável, o desvio em relação à média histórica da mesma mesorregião e semana epidemiológica, em valor absoluto e padronizado pelo desvio-padrão. A climatologia foi calculada exclusivamente com os anos de treino (2001 a 2022 para as variantes~B e~C; 2019 a 2022 para a variante~A).
 \end{itemize}
+
+Os 96 atributos do SINAN da semana~$t$ foram classificados quanto à sua disponibilidade no momento da previsão. Trinta e cinco estão disponíveis na própria semana, como os dados demográficos, os sintomas iniciais e a contagem de notificações; os outros 61 dependem do encerramento da ficha de notificação, como a classificação final, o critério diagnóstico, a gravidade e o óbito, e só são conhecidos semanas depois. O modelo principal deste trabalho, chamado de \textbf{modelo realista}, exclui esses 61 atributos e inclui a contagem de notificações da semana~$t$, com 203 atributos no total. Com isso, ele parte da mesma informação que a persistência (Seção~\ref{sec:met_referencias}). O conjunto completo de 266 atributos foi mantido na comparação entre as variantes de janela e os conjuntos de atributos (Seção~\ref{sec:eng_atributos}).
 
 \section{Variável Alvo e Classes de Risco}
 \label{sec:classes_risco}
@@ -166,8 +169,9 @@ Os hiperparâmetros foram os mesmos nas nove combinações, de modo que as difer
 A classificação de risco utilizou as mesmas configurações com a função objetivo multiclasse (\textit{softprob}) e pesos inversamente proporcionais à frequência de cada classe.
 
 \subsection{Previsores de Referência}
+\label{sec:met_referencias}
 
-Três previsores ingênuos foram avaliados no mesmo conjunto de teste e com as mesmas métricas:
+Cinco previsores de referência foram avaliados no mesmo conjunto de teste e com as mesmas métricas. Três deles são ingênuos:
 
 \begin{itemize}
     \item \textbf{Persistência:} a previsão para $t+4$ é a contagem da semana $t$;
@@ -175,13 +179,22 @@ Três previsores ingênuos foram avaliados no mesmo conjunto de teste e com as m
     \item \textbf{Sazonal:} a contagem da mesma semana do ano anterior, isto é, da semana $t+4-52$.
 \end{itemize}
 
+Os outros dois não são ingênuos e verificam se o XGBoost acrescenta algo a modelos simples:
+
+\begin{itemize}
+    \item \textbf{Climatologia:} a média das notificações da mesorregião na mesma semana epidemiológica, calculada nos anos de treino;
+    \item \textbf{Ridge autorregressivo:} uma regressão linear com penalidade L2 sobre os mesmos atributos do modelo realista, com $\log(1+x)$ aplicado às contagens, atributos padronizados e penalidade escolhida no conjunto de validação.
+\end{itemize}
+
+O SARIMA e o SARIMAX, previstos no TCC~1, não foram avaliados, porque exigiriam ajustar e selecionar um modelo para cada uma das 137 mesorregiões; a comparação fica indicada como trabalho futuro (Seção~\ref{sec:trabalhos_futuros}).
+
 Para a classificação, os mesmos limiares de risco do treino foram aplicados às previsões de cada baseline.
 
 \section{Protocolo de Avaliação}
 
 \subsection{Comparação no Conjunto de Teste}
 
-Os modelos e baselines foram comparados por $R^2$ nas escalas logarítmica e original, MAE e RMSE, e a classificação por F1 macro, F1 por classe e AUC. As diferenças entre as variantes do XGBoost foram testadas por teste $t$ pareado sobre os erros quadráticos em escala logarítmica. O desempenho foi também desagregado por ano de teste, por UF, por mesorregião e para o recorte do Distrito Federal.
+Os modelos e baselines foram comparados por $R^2$ nas escalas logarítmica e original, MAE e RMSE, e a classificação por F1 macro, F1 por classe e AUC. Como as observações são correlacionadas no tempo e entre mesorregiões, as diferenças não foram testadas observação a observação. A comparação com a persistência usou o teste de Diebold-Mariano, com variância de Newey-West para o horizonte de quatro semanas ($h=4$), e o bootstrap em blocos de mesorregião e ano (5.000 reamostragens), que reamostra temporadas inteiras de cada mesorregião. Para a contribuição do clima, o teste de Diebold-Mariano foi aplicado à perda semanal somada entre as mesorregiões, o que elimina a correlação espacial. Como o $R^2$ agregado mistura mesorregiões com ordens de grandeza diferentes, foi calculado também, para cada mesorregião, o MASE com a persistência como denominador, isto é, a razão entre o MAE do modelo e o da persistência, que não depende da escala da mesorregião. O desempenho foi também desagregado por ano de teste, por UF, por mesorregião e para o recorte do Distrito Federal.
 
 \subsection{Métricas de Momento}
 \label{sec:met_momento}
@@ -190,7 +203,8 @@ Como o objetivo principal é antecipar o momento dos surtos (Seção~\ref{sec:re
 
 \begin{itemize}
     \item \textbf{Erro na semana do pico:} para cada mesorregião e temporada (2024 e 2025) com ao menos uma semana no nível de risco mais alto, a diferença, em semanas, entre a semana de maior valor previsto e a semana de maior valor observado. São reportados a proporção de temporadas com erro de até duas semanas, o erro absoluto mediano e o erro médio, cujo sinal indica atraso (positivo) ou antecipação (negativo);
-    \item \textbf{Acerto de direção:} a proporção de mesorregião-semanas em que o sinal da variação prevista entre $t$ e $t+4$ coincide com o da variação observada, considerando apenas as variações relevantes, com valor absoluto de ao menos cinco notificações e de 20\% da contagem da semana $t$. A referência é uma regra ingênua que prolonga a tendência da última semana.
+    \item \textbf{Acerto de direção:} a proporção de mesorregião-semanas em que o sinal da variação prevista entre $t$ e $t+4$ coincide com o da variação observada, considerando apenas as variações relevantes, com valor absoluto de ao menos cinco notificações e de 20\% da contagem da semana $t$. A referência é uma regra ingênua que prolonga a tendência da última semana;
+    \item \textbf{Antecedência do alerta:} para cada mesorregião e temporada do teste, o número de semanas entre o primeiro sinal de subida e a semana do pico observado. O sinal do modelo é a primeira semana, antes do pico, em que a previsão cresce por duas semanas seguidas. A referência é uma regra de tendência que aplica o mesmo critério às notificações observadas, isto é, sinaliza quando a contagem cresce por duas semanas seguidas, usando apenas dados disponíveis na semana~$t$.
 \end{itemize}
 
 Essas métricas foram calculadas com os modelos de regressão já treinados, sem retreino, na mesma etapa que calcula os baselines no teste da v4. As definições formais estão no Apêndice~\ref{ap:metricas}.
@@ -211,6 +225,11 @@ Na prática, as notificações das semanas mais recentes chegam com atraso ao si
 
 Os cenários de atraso não removem as contagens agregadas da semana $t$ (por exemplo, casos confirmados ou prováveis), que também estariam sujeitas a atraso em uma aplicação real. Eles representam, portanto, uma simulação otimista da perda de informação. A contagem de notificações da própria semana $t$ não é incluída como atributo em nenhum cenário.
 
+\subsection{Controles da Contribuição do Clima}
+\label{sec:met_controles}
+
+Dois controles verificam se o ganho atribuído ao clima não resulta de outros fatores. O primeiro separa o sinal climático da simples identificação da mesorregião e da época do ano: um XGBoost foi treinado apenas com o código da mesorregião e a codificação cíclica da semana do ano, com e sem as variáveis climáticas, e comparado ao cenário ``só clima''. O segundo trata da correlação entre a presença de dados climáticos e a época, já que a cobertura do INMET era baixa nos primeiros anos da série (Seção~\ref{sec:res_dados}) e o XGBoost trata a ausência de valores como informação: a variante~B foi retreinada apenas com os anos de cobertura alta (2008 a 2022), com e sem clima.
+
 \subsection{Curva de Aprendizado}
 \label{sec:met_learning_curve}
 
@@ -228,7 +247,7 @@ Para quantificar a estabilidade da distribuição dos atributos ao longo da sér
 
 \subsection{Interpretação}
 
-Os valores SHAP do conjunto ``SINAN + clima enriquecido'' foram calculados com o TreeExplainer sobre 10.000 amostras do teste, para cada variante de janela. Para as variáveis climáticas mais importantes, o limiar foi estimado como o valor em que a contribuição média, calculada em 50 faixas da variável, muda de sinal.
+Os valores SHAP foram calculados com o TreeExplainer sobre 10.000 amostras do teste para o modelo realista e para o modelo completo, ambos com a série longa e o clima enriquecido. Na pipeline anterior às correções (v3), os limiares das variáveis climáticas mais importantes foram estimados como o valor em que a contribuição média, calculada em 50 faixas da variável, muda de sinal; esses resultados estão no Apêndice~\ref{ap:comparacao_v3}.
 
 \section{Experimento Complementar: Recorte com Maior Cobertura}
 \label{sec:met_complementar}
