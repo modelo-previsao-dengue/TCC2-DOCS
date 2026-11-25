@@ -120,10 +120,11 @@ Foram construídos 266 atributos, organizados em cinco grupos:
 \end{itemize}
 
 \section{Variável Alvo e Classes de Risco}
+\label{sec:classes_risco}
 
 O alvo de regressão é a contagem de notificações da mesorregião na semana $t+4$. O modelo foi treinado sobre $\log(1+y)$, e as previsões foram revertidas por $e^{\hat{z}}-1$, limitadas a zero.
 
-Para a classificação, cada semana recebeu um de quatro níveis de risco (baixo, moderado, alto e muito alto), definidos pelos percentis 50, 75 e 90 das notificações em $t+4$ de cada mesorregião, calculados apenas no período de treino. Os mesmos limiares foram aplicados à validação e ao teste. No treino da série longa (variante~B), 51,9\% das mesorregião-semanas ficaram no nível baixo, 23,9\% no moderado, 14,4\% no alto e 9,8\% no muito alto.
+Para a classificação, cada semana recebeu um de quatro níveis de risco (baixo, moderado, alto e muito alto), definidos pelos percentis 50, 75 e 90 das notificações em $t+4$ de cada mesorregião, calculados apenas no período de treino. Os mesmos limiares foram aplicados à validação e ao teste. No treino da série longa (variante~B), 51,9\% das mesorregião-semanas ficaram no nível baixo, 23,9\% no moderado, 14,4\% no alto e 9,8\% no muito alto. O nível muito alto é relativo ao histórico de cada mesorregião e não equivale a surto no sentido epidemiológico, que pressupõe a comparação com o canal endêmico (Seção~\ref{sec:ref_canal_endemico}).
 
 \section{Modelos}
 
@@ -185,7 +186,7 @@ Os modelos e baselines foram comparados por $R^2$ nas escalas logarítmica e ori
 \subsection{Métricas de Momento}
 \label{sec:met_momento}
 
-Como o objetivo principal é antecipar o momento dos surtos (Seção~\ref{sec:ref_magnitude}), o $R^2$ foi complementado por duas métricas de momento, calculadas para os modelos e para os baselines sobre o mesmo conjunto de teste:
+Como o objetivo principal é antecipar o momento dos surtos (Seção~\ref{sec:ref_magnitude}), o $R^2$ foi complementado por duas métricas de momento, calculadas para os modelos e para os baselines sobre o mesmo conjunto de teste. Neste trabalho, \textbf{temporada} designa o ano epidemiológico, isto é, o conjunto das semanas de previsão de um ano, e \textbf{semana do pico} é a semana de maior valor, observado ou previsto, na temporada:
 
 \begin{itemize}
     \item \textbf{Erro na semana do pico:} para cada mesorregião e temporada (2024 e 2025) com ao menos uma semana no nível de risco mais alto, a diferença, em semanas, entre a semana de maior valor previsto e a semana de maior valor observado. São reportados a proporção de temporadas com erro de até duas semanas, o erro absoluto mediano e o erro médio, cujo sinal indica atraso (positivo) ou antecipação (negativo);

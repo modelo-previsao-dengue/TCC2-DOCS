@@ -46,7 +46,7 @@ A série de modelagem foi construída pelos passos a seguir.
 \section{Métricas de Pico e de Estabilidade Distribucional}
 \label{ap:metricas}
 
-\paragraph{Erro na semana do pico.} Para cada mesorregião $m$ e temporada $s$ com ao menos uma semana no nível de risco mais alto, sejam $y_{m,s}(w)$ e $\hat{y}_{m,s}(w)$ as notificações observadas e previstas na semana $w$. O erro na semana do pico é
+\paragraph{Erro na semana do pico.} Para cada mesorregião $m$ e temporada $s$ (ano epidemiológico) com ao menos uma semana no nível de risco mais alto, sejam $y_{m,s}(w)$ e $\hat{y}_{m,s}(w)$ as notificações observadas e previstas na semana $w$. O erro na semana do pico é
 \begin{equation}
 e_{m,s} = \mathop{\mathrm{arg\,max}}_{w} \hat{y}_{m,s}(w) - \mathop{\mathrm{arg\,max}}_{w} y_{m,s}(w),
 \end{equation}
@@ -106,7 +106,7 @@ A Tabela~\ref{tab:scripts} lista os scripts da pipeline v4, na pasta \texttt{scr
 \chapter{Comparação com a Pipeline Anterior às Correções (v3)}
 \label{ap:comparacao_v3}
 
-Este apêndice apresenta os resultados obtidos com a pipeline anterior às correções de dados descritas na Seção~\ref{sec:correcoes}. Na versão anterior (v3), a janela de treino cobria 2019 a 2022 (4~anos), e os rótulos ``A'', ``B'' e ``C'' designavam \textbf{conjuntos de atributos} (respectivamente, só SINAN, SINAN + INMET bruto e SINAN + INMET enriquecido), diferentemente da v4, em que designam \textbf{variantes de janela temporal} (4~anos, 22~anos e 22~anos com peso de recência). Os números abaixo servem como referência para dimensionar o efeito das correções.
+Este apêndice apresenta os resultados obtidos com a pipeline anterior às correções de dados descritas na Seção~\ref{sec:correcoes}. Na versão anterior (v3), a janela de treino cobria 2019 a 2022 (4~anos), e os modelos diferiam apenas no \textbf{conjunto de atributos}: só SINAN, SINAN + INMET bruto e SINAN + INMET enriquecido. Neste apêndice, os modelos da v3 são identificados por esse conjunto; as letras A, B e C são usadas apenas no corpo do trabalho, para as variantes de janela temporal da v4. Os números abaixo servem como referência para dimensionar o efeito das correções.
 
 \section{Efeito das Correções sobre os Resultados de Regressão}
 
@@ -120,8 +120,8 @@ A Tabela~\ref{tab:antes_depois} compara a mesma pipeline executada antes e depoi
 \begin{tabular}{|p{0.44\textwidth}|c|c|}
 \hline
 \textbf{Indicador} & \textbf{Antes} & \textbf{Depois} \\ \hline
-$R^2_{\log}$ do modelo A (só SINAN) & 0,843 & 0,859 \\ \hline
-$R^2_{\log}$ do modelo C (SINAN + INMET enriquecido) & 0,853 & 0,870 \\ \hline
+$R^2_{\log}$ do modelo só SINAN & 0,843 & 0,859 \\ \hline
+$R^2_{\log}$ do modelo SINAN + INMET enriquecido & 0,853 & 0,870 \\ \hline
 Ganho do clima com atraso de 4 semanas ($\Delta R^2_{\log}$) & $-$0,0006 ($p=0{,}60$) & +0,0047 ($p<0{,}001$) \\ \hline
 Ganho do clima com atraso de 8 semanas ($\Delta R^2_{\log}$) & $-$0,0013 ($p=0{,}22$) & +0,0035 ($p<0{,}001$) \\ \hline
 \textit{Walk-forward}: janelas em que C supera A & 3 de 5 & 4 de 4 \\ \hline
@@ -129,12 +129,12 @@ Melhor variável climática no SHAP (posição) & pressão (12.ª) & temp. míni
 Limiar climático de destaque & ``umidade'' 15,7 & temp. mínima 13,8~$^\circ$C \\ \hline
 \end{tabular}
 \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
-\nota{Antes: relatórios do PR \#1 do repositório MODELO-PREVISAO~\cite{modeloprevisao2026}; depois: pipeline reprocessada. Os rótulos A e C referem-se a conjuntos de atributos na v3.}
+\nota{Antes: relatórios do PR \#1 do repositório MODELO-PREVISAO~\cite{modeloprevisao2026}; depois: pipeline reprocessada.}
 \end{table}
 
 \section{Classificação do Nível de Risco (v3)}
 
-Na pipeline v3, com janela curta de treino (2019--2022), os classificadores XGBoost foram avaliados com os mesmos baselines. Nesta versão, A, B e C designam conjuntos de atributos: só SINAN, SINAN + INMET bruto e SINAN + INMET enriquecido, respectivamente.
+Na pipeline v3, com janela curta de treino (2019--2022), os classificadores XGBoost, um para cada conjunto de atributos, foram avaliados com os mesmos baselines.
 
 Na classificação em quatro níveis de risco (Tabela~\ref{tab:risco_v3}), o XGBoost dedicado alcançou F1 macro de 0,49 e AUC de 0,77 com clima, contra 0,47 e 0,75 sem clima. Todos os classificadores, no entanto, ficaram abaixo da simples aplicação dos limiares de risco à persistência, que obteve F1 macro de 0,62 e foi superior em todas as classes. As classes intermediárias (moderado e alto) foram as mais difíceis para todos os métodos.
 
@@ -148,12 +148,11 @@ Na classificação em quatro níveis de risco (Tabela~\ref{tab:risco_v3}), o XGB
 \textbf{Modelo} & \textbf{Macro} & \textbf{Baixo} & \textbf{Moderado} & \textbf{Alto} & \textbf{Muito alto} \\ \hline
 Persistência & \textbf{0,622} & \textbf{0,837} & \textbf{0,481} & \textbf{0,416} & \textbf{0,755} \\ \hline
 Média móvel (4 semanas) & 0,578 & 0,810 & 0,431 & 0,372 & 0,700 \\ \hline
-XGBoost A (só SINAN) & 0,470 & 0,724 & 0,286 & 0,263 & 0,609 \\ \hline
-XGBoost B (+ INMET bruto) & 0,491 & 0,740 & 0,323 & 0,268 & 0,632 \\ \hline
-XGBoost C (+ INMET enriquecido) & 0,491 & 0,736 & 0,299 & 0,284 & 0,643 \\ \hline
+XGBoost, só SINAN & 0,470 & 0,724 & 0,286 & 0,263 & 0,609 \\ \hline
+XGBoost, + INMET bruto & 0,491 & 0,740 & 0,323 & 0,268 & 0,632 \\ \hline
+XGBoost, + INMET enriquecido & 0,491 & 0,736 & 0,299 & 0,284 & 0,643 \\ \hline
 \end{tabular}
 \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
-\nota{Os rótulos A, B e C referem-se a conjuntos de atributos na v3.}
 \end{table}
 
 O experimento complementar chegou ao mesmo resultado com uma definição de surto diferente, binária e baseada no canal endêmico: o classificador dedicado obteve F1 de 0,72 a 0,74 para a classe surto, abaixo da persistência do rótulo (0,85). Aplicar o limiar do canal endêmico à previsão contínua da regressão, em vez de treinar um classificador, alcançou 0,83, próximo à persistência. Os dois resultados indicam que, para gerar alertas, é preferível derivá-los da previsão numérica, e não treinar um classificador separado.
@@ -165,16 +164,17 @@ A análise SHAP da variante com clima enriquecido na v3 (Figura~\ref{fig:shap_v3
 \begin{figure}[htb]
     \centering
     \includegraphics[width=0.7\textwidth]{figuras/resultados/fig_v3_shap_beeswarm.png}
-    \caption{Valores SHAP das 20 variáveis mais importantes do modelo C --- pipeline v3}
+    \caption{Valores SHAP das 20 variáveis mais importantes do modelo com INMET enriquecido --- pipeline v3}
     \label{fig:shap_v3}
     \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
+    \nota{No título da figura, ``Modelo C'' é o rótulo da v3 para o modelo com INMET enriquecido.}
 \end{figure}
 
 Os limiares estimados para as variáveis climáticas (Tabela~\ref{tab:limiares_v3}) são coerentes com a biologia do vetor. A contribuição da temperatura passa a ser positiva acima de 13,8~$^\circ$C de mínima e de 21,0~$^\circ$C de média semanal, valores próximos do limite inferior de transmissão descrito na literatura. A precipitação média na janela de 2 a 4 semanas e o número de dias de chuva nessa janela aumentam a previsão, o que corresponde ao intervalo de desenvolvimento do vetor. A pressão atmosférica tem efeito negativo, provavelmente como indicador indireto de altitude e de massas de ar mais secas e frias.
 
 \begin{table}[htb]
 \centering
-\caption{Limiares climáticos estimados pela análise SHAP (modelo C, v3) e efeito sobre a previsão acima do limiar}
+\caption{Limiares climáticos estimados pela análise SHAP (modelo com INMET enriquecido, v3) e efeito sobre a previsão acima do limiar}
 \label{tab:limiares_v3}
 \small
 \begin{tabular}{|p{0.47\textwidth}|c|r|c|}
