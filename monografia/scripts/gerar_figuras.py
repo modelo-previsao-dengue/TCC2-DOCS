@@ -20,7 +20,9 @@ Gera tambem, com os dados corrigidos da v4:
   - figuras/resultados/fig_psi_por_ano.png, a partir de
     models/regression_v4/data_drift_psi_v4.csv;
   - figuras/resultados/fig_variantes.png, fig_walkforward.png e fig_f1_por_classe.png, a partir
-    dos relatorios 46, 47 e 54 em data/model_ready_v4/.
+    dos relatorios 46, 47 e 54 em data/model_ready_v4/;
+  - figuras/resultados/fig_baselines_v4.png e fig_shap_realista.png, a partir dos relatorios
+    57, 58 e 59 (lidos do working tree ou, se ausentes, de origin/main).
 
     python scripts/gerar_figuras.py [--modelo-previsao CAMINHO] [--so-novas]
 """
@@ -285,6 +287,90 @@ def fig_f1_por_classe(rel54):
     plt.close(fig)
 
 
+BASELINES_V4 = [
+    ("Persistência", "persistencia"),
+    ("Média móvel\n(4 semanas)", "media_movel_4"),
+    ("Sazonal\n(ano anterior)", "sazonal"),
+    ("Climatologia", "climatologia"),
+    ("Ridge", "ridge_ar"),
+    ("XGBoost\nrealista", "realista"),
+]
+MENOS = FuncFormatter(lambda v, _: f"{v:.2f}".replace(".", ",").replace("-", "−"))
+
+
+def fig_baselines_v4(rel57, rel58, rel59):
+    """R2 nas duas escalas: baselines ingenuos (57), climatologia e Ridge (59) e XGBoost realista (58)."""
+    m = dict(rel57["teste_agregado"])
+    m["climatologia"] = rel59["climatologia"]["teste_agregado"]
+    m["ridge_ar"] = rel59["ridge_ar"]["teste_agregado"]
+    m["realista"] = rel58["cenarios"]["realista"]["teste_agregado"]
+    r2l = [m[k]["R2_log"] for _, k in BASELINES_V4]
+    r2 = [m[k]["R2"] for _, k in BASELINES_V4]
+    x = np.arange(len(BASELINES_V4))
+    with plt.rc_context({"font.size": 10}):
+        fig, ax = plt.subplots(figsize=(6.3, 3.6))
+        ax.bar(x - 0.2, r2l, 0.4, label=r"$R^2_{\log}$ (escala logarítmica)", color="#2166ac")
+        ax.bar(x + 0.2, r2, 0.4, label=r"$R^2$ (escala original)", color="#d6604d")
+        for xi, (a, b) in enumerate(zip(r2l, r2)):
+            ax.text(xi - 0.2, max(a, 0) + 0.02, f"{a:.2f}".replace(".", ","), ha="center", fontsize=8)
+            yb = b + 0.02 if b >= 0 else b - 0.09
+            ax.text(xi + 0.2, yb, f"{b:.2f}".replace(".", ",").replace("-", "−"), ha="center", fontsize=8)
+        ax.axhline(0, color="black", lw=0.6)
+        ax.set_xticks(x, [r for r, _ in BASELINES_V4], fontsize=8.5)
+        ax.set_ylabel(r"$R^2$ no teste")
+        ax.yaxis.set_major_formatter(MENOS)
+        ax.set_ylim(-0.85, 1.05)
+        ax.grid(axis="y", alpha=0.3)
+        ax.spines[["top", "right"]].set_visible(False)
+        ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=2, fontsize=8.5, frameon=False)
+        fig.tight_layout()
+        fig.savefig(FIG_DIR / "fig_baselines_v4.png", dpi=300)
+    plt.close(fig)
+
+
+NOMES_SHAP = {
+    "notificacoes": "Notificações (t)",
+    "notificacoes_lag_1w": "Notificações (t−1)",
+    "notificacoes_lag_2w": "Notificações (t−2)",
+    "notificacoes_lag_6w": "Notificações (t−6)",
+    "notificacoes_diff_1w": "Diferença semanal",
+    "notificacoes_pct_change_1w": "Variação % semanal",
+    "notificacoes_media_movel_2_4w": "Média de t−2 a t−4",
+    "notificacoes_media_movel_4_8w": "Média de t−4 a t−8",
+    "week_of_year_cos": "Semana do ano (cos)",
+    "week_of_year_sin": "Semana do ano (sen)",
+    "qt_confirmados_provaveis": "Confirmados ou prováveis (t)",
+    "prop_confirmado_provavel": "Prop. confirmados ou prováveis (t)",
+    "atraso_notificacao_medio_dias": "Atraso médio da notificação",
+}
+CONSOLIDADOS = {"qt_confirmados_provaveis", "prop_confirmado_provavel"}
+
+
+def fig_shap_realista(rel58):
+    """Top 10 do SHAP medio absoluto: modelo completo (266) e realista (203), script 58."""
+    paineis = [("completo", "Modelo completo\n(266 atributos)"),
+               ("realista", "Modelo realista\n(203 atributos)")]
+    with plt.rc_context({"font.size": 9}):
+        fig, axes = plt.subplots(1, 2, figsize=(6.3, 3.6), sharex=True)
+        for ax, (chave, titulo) in zip(axes, paineis):
+            top = rel58["cenarios"][chave]["shap_top10"][::-1]
+            nomes = [NOMES_SHAP.get(t["feature"], t["feature"]) for t in top]
+            cores = ["#d6604d" if t["feature"] in CONSOLIDADOS else "#2166ac" for t in top]
+            ax.barh(range(len(top)), [t["shap_mean_abs"] for t in top], color=cores)
+            ax.set_yticks(range(len(top)), nomes, fontsize=8)
+            ax.set_title(titulo, fontsize=9)
+            ax.xaxis.set_major_formatter(DUAS)
+            ax.grid(axis="x", alpha=0.3)
+            ax.spines[["top", "right"]].set_visible(False)
+        fig.supxlabel("Valor SHAP absoluto médio (escala logarítmica do alvo)", fontsize=9)
+        fig.legend(handles=[Patch(color="#d6604d", label="Depende da consolidação do SINAN"),
+                            Patch(color="#2166ac", label="Disponível na semana t")],
+                   loc="upper center", ncol=2, fontsize=8, frameon=False)
+        fig.tight_layout(rect=(0, 0, 1, 0.93))
+        fig.savefig(FIG_DIR / "fig_shap_realista.png", dpi=300)
+    plt.close(fig)
+
+
 def contagem_clima(csv, chave):
     piv = pd.read_csv(csv).pivot_table(index=chave, columns="modelo", values="R2_log")
     ganho = piv["Var B: INMET enriquecido"] - piv["Var B: SINAN-only"]
@@ -314,6 +400,11 @@ def main():
     fig_variantes(rel("46_regression_v4_report.json"))
     fig_walkforward(rel("47_walkforward_v4_report.json"))
     fig_f1_por_classe(rel("54_classification_v4_report.json"))
+    rel_main = lambda n: (rel(n) if (mp / "data" / "model_ready_v4" / n).exists() else json.loads(
+        subprocess.check_output(["git", "-C", str(mp), "show", f"origin/main:data/model_ready_v4/{n}"])))
+    rel57, rel58 = rel_main("57_avaliacao_modelos_salvos_v4_report.json"), rel_main("58_vazamento_temporal_report.json")
+    fig_baselines_v4(rel57, rel58, rel_main("59_baselines_avancados_report.json"))
+    fig_shap_realista(rel58)
     if args.so_novas:
         return
 
