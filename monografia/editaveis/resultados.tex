@@ -366,6 +366,21 @@ UF & 0,454 & \textbf{0,625} & 0,528 & $-$0,097 \\ \hline
 \fonte{Dados do SINAN (DATASUS) e do INMET; experimento disponível no repositório MODELO-PREVISAO~\cite{modeloprevisao2026}.}
 \end{table}
 
+\section{Discussão}
+\label{sec:res_discussao}
+
+Esta seção interpreta os resultados à luz da literatura, na ordem das subquestões.
+
+\paragraph{Momento e magnitude (subquestão~i).} O resultado central deste trabalho, em que o modelo antecipa o momento dos surtos mas não a magnitude do evento extremo de 2024, reproduz a assimetria descrita na Seção~\ref{sec:ref_magnitude}. No desafio de previsão com dezesseis equipes analisado por \citeonline{johansson2019open}, o desempenho foi mais baixo justamente nas temporadas de maior incidência. No Brasil, o mesmo padrão apareceu na \textit{sprint} de previsão de dengue organizada em 2024 pelo consórcio formado pelo sistema de alerta Infodengue e pela plataforma Mosqlimate~\cite{araujo2026sprint,ganem2024mosqlimate}: os modelos das equipes participantes, bem como os \textit{ensembles}, tiveram bom desempenho nas temporadas típicas, mas nenhum produziu previsões acuradas para a epidemia extrema de 2024. A subestimação de 2024 não é, portanto, uma limitação particular do XGBoost, e sim uma dificuldade comum aos métodos avaliados diante do mesmo evento. Quanto ao método, \citeonline{roster2022machine} também encontraram, em cidades brasileiras, modelos baseados em árvores superiores a um previsor sazonal ingênuo, e \citeonline{mussumeci2020large}, com dados do Infodengue, compararam redes LSTM, \textit{random forest} e regressão Lasso; como esses trabalhos usam outras unidades espaciais, outra resolução temporal ou outro horizonte, os valores das métricas não são diretamente comparáveis aos deste trabalho. O que este trabalho acrescenta é a comparação sistemática com a persistência e a separação entre o momento e a magnitude, sem as quais um modelo útil para antecipar o início e o pico da temporada pode parecer inferior a uma regra que apenas repete o valor atual.
+
+\paragraph{Série longa e estabilidade (subquestão~ii).} A série de 22~anos superou a de 4~anos ($+0{,}015$ de $R^2_{\log}$), mesmo com a mudança substancial na distribuição dos atributos medida pelo PSI (Seção~\ref{sec:res_drift}). Esse resultado indica que, para a dengue, a variedade de temporadas contida na série longa, incluindo anos de pico excepcional, compensa o efeito do \textit{concept drift} discutido na Seção~\ref{sec:ref_drift}. O peso de recência da variante~C, desenhado para atenuar esse efeito, não trouxe melhora adicional, o que sugere que o drift observado não compromete o aprendizado das relações usadas pelo modelo.
+
+\paragraph{Contribuição do clima (subquestão~iii).} O ganho das variáveis climáticas foi pequeno ($+0{,}008$ de $R^2_{\log}$ na variante~B), embora estatisticamente significativo (Seção~\ref{sec:res_clima}). Esse resultado é coerente com o de \citeonline{johansson2016evaluating}, para quem, em previsões de curto horizonte, a autocorrelação da série domina e o clima acrescenta pouco: com quatro semanas de antecedência, as notificações recentes já carregam o efeito do clima das semanas anteriores (Seção~\ref{sec:ref_clima_curto_prazo}).
+
+\paragraph{Alertas de risco (subquestão~iv).} Os alertas obtidos aplicando os limiares de risco à previsão da regressão superaram a persistência, e o classificador treinado especificamente para a tarefa ficou abaixo de ambos (Seção~\ref{sec:res_classificacao}). Esse resultado reforça a recomendação, discutida na Seção~\ref{sec:ref_canal_endemico}, de que alertas derivados de modelos explicitem a definição de risco adotada~\cite{brady2015outbreak} e sejam comparados com a regra trivial de repetir o estado atual: sem essa comparação, o classificador dedicado pareceria uma solução adequada.
+
+\paragraph{Variáveis utilizadas (subquestão~v).} A análise SHAP mostra que o modelo depende principalmente da própria série epidemiológica, com a contagem da semana~$t$ e as suas defasagens nas primeiras posições, seguidas da sazonalidade (Seção~\ref{sec:res_shap}). Esse padrão é consistente com o ganho pequeno do clima e com a literatura citada acima: no horizonte de quatro semanas, as variáveis climáticas atuam como informação complementar, e não como o principal determinante da previsão.
+
 \section{Síntese}
 \label{sec:res_sintese}
 
