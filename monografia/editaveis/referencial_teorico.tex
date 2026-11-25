@@ -33,39 +33,39 @@ A Figura \ref{fig:dengue_clima_goiania} exemplifica essa complexa interação en
 
 A modelagem preditiva aplicada a doenças infecciosas tem evoluído significativamente nas últimas décadas, incorporando técnicas cada vez mais sofisticadas de análise de séries temporais, aprendizado de máquina e deep learning. No contexto da dengue, diferentes abordagens têm sido propostas e avaliadas, cada uma com suas vantagens e limitações específicas. Os modelos estatísticos clássicos, como ARIMA (\textit{Autoregressive Integrated Moving Average}) e sua extensão sazonal SARIMA (\textit{Seasonal ARIMA}), são amplamente utilizados para previsão de séries temporais epidemiológicas por sua capacidade de capturar autocorrelação temporal, tendências e padrões sazonais nos dados. Um modelo SARIMA é especificado por sete parâmetros $(p, d, q) \times (P, D, Q)_s$, onde $p$ representa a ordem autoregressiva, $d$ o grau de diferenciação, $q$ a ordem de média móvel, $P$, $D$, $Q$ os componentes sazonais correspondentes, e $s$ o período sazonal (por exemplo, 52 para dados semanais). O modelo SARIMAX estende o SARIMA ao incorporar variáveis exógenas, como dados climáticos, permitindo quantificar explicitamente o efeito de covariáveis externas na série temporal de casos de dengue. Adicionalmente, o Prophet, desenvolvido pelo Facebook (Meta), representa uma abordagem moderna de modelagem aditiva que decompõe a série em tendência, sazonalidade e efeitos de feriados, sendo particularmente robusto a dados faltantes e outliers, características comuns em dados epidemiológicos.
 
-A Figura \ref{fig:schematic_sarima} apresenta a estrutura esquemática do modelo SARIMA, ilustrando seus componentes autoregressivos (AR), de diferenciação (I) e de média móvel (MA), tanto para a parte não-sazonal quanto para a parte sazonal, evidenciando como o modelo captura padrões temporais complexos através da combinação desses elementos.
-
-\begin{figure}[htb]
-    \centering
-    \includegraphics[width=0.8\textwidth]{figuras/Schematic-SARIMA.png}
-    \caption{Estrutura esquemática do modelo SARIMA.}
-    \label{fig:schematic_sarima}
-    \fonte{\cite{gong2023sarima}}
-\end{figure}
-
 \subsection{Modelos de Aprendizado de Máquina}
 
 Os métodos de aprendizado de máquina têm demonstrado capacidade superior em capturar relações complexas e não-lineares presentes em dados epidemiológicos e climáticos \cite{roster2022machine,mussumeci2020large}. Random Forest, um método de ensemble que constrói múltiplas árvores de decisão e agrega suas predições, tem se destacado em aplicações de previsão de dengue devido à sua capacidade de capturar relações não-lineares, robustez a outliers, fornecimento de medidas de importância de features e necessidade reduzida de tuning de hiperparâmetros \cite{roster2022machine}. Este método tem demonstrado desempenho particularmente bom em séries temporais de dengue, com estudos reportando erros médios absolutos consistentemente baixos em múltiplas cidades brasileiras \cite{roster2022machine,mussumeci2020large}. Roster et al. (2022) aplicaram Random Forest para previsão de dengue em múltiplas cidades brasileiras, demonstrando que o modelo captura efetivamente padrões sazonais e a influência de variáveis meteorológicas, com performance superior a modelos estatísticos tradicionais \cite{roster2022machine}.
 
 
-A Figura \ref{fig:schematic_random_forest} ilustra o funcionamento do algoritmo Random Forest, mostrando como múltiplas árvores de decisão são construídas a partir de amostras bootstrap dos dados originais e subconjuntos aleatórios de features, com a predição final obtida pela agregação (média ou votação) das predições individuais de cada árvore, reduzindo a variância e melhorando a generalização.
+No Random Forest, múltiplas árvores de decisão são construídas a partir de amostras \textit{bootstrap} dos dados originais e de subconjuntos aleatórios de atributos, e a predição final é obtida pela agregação (média ou votação) das predições individuais de cada árvore, o que reduz a variância e melhora a generalização.
+
+O \textit{eXtreme Gradient Boosting} (XGBoost), algoritmo adotado neste trabalho, constrói árvores de decisão de forma sequencial, cada uma corrigindo os erros das anteriores (Seção~\ref{sec:xgboost}). Na previsão de dengue em cidades brasileiras, não há um método uniformemente superior: \citeonline{roster2022machine} obtiveram os menores erros com \textit{random forest}, à frente do \textit{gradient boosting} e de um previsor sazonal ingênuo, e o melhor modelo variou entre as cidades, enquanto \citeonline{mussumeci2020large}, com dados do Infodengue, obtiveram os menores erros com redes LSTM. Este trabalho adota o XGBoost por tratar valores ausentes nativamente e por controlar a complexidade do modelo por regularização (Seção~\ref{sec:xgboost}), características relevantes para uma série nacional com lacunas de cobertura climática. A Figura~\ref{fig:schematic_xgboost} ilustra a construção sequencial das árvores.
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.6\textwidth]{figuras/Schematic-Random Forest.png}
-    \caption{Estrutura esquemática do modelo Random Forest.}
-    \label{fig:schematic_random_forest}
-    \fonte{\cite{researchgate_randomforest}}
-\end{figure}
-
-O \textit{eXtreme Gradient Boosting} (XGBoost), algoritmo adotado neste trabalho, constrói árvores de decisão de forma sequencial, cada uma corrigindo os erros das anteriores (Seção~\ref{sec:xgboost}). Estudos recentes mostram que XGBoost alcança desempenho superior a Random Forest e a modelos estatísticos clássicos em previsão de dengue, especialmente quando variáveis climáticas são incorporadas~\cite{roster2022machine,mussumeci2020large,ferdousi2021windowed}.
-
-\begin{figure}[htb]
-    \centering
-    \includegraphics[width=0.6\textwidth]{figuras/Schematic-XGBoost.png}
-    \caption{Estrutura esquemática do modelo XGBoost.}
+    \begin{tikzpicture}[
+        >=Stealth,
+        caixa/.style={draw, rounded corners=2pt, align=center, text width=22mm, minimum height=13mm, font=\small},
+        rot/.style={font=\scriptsize, align=center}
+    ]
+        \node[caixa, text width=25mm] (dados) at (0,0) {Dados de treino\\$(\mathbf{x}_i, y_i)$};
+        \node[caixa] (t1) at (40mm,0) {Árvore 1\\$f_1(\mathbf{x})$};
+        \node[caixa] (t2) at (80mm,0) {Árvore 2\\$f_2(\mathbf{x})$};
+        \node[font=\large] (pts) at (106mm,0) {$\cdots$};
+        \node[caixa] (tk) at (130mm,0) {Árvore $K$\\$f_K(\mathbf{x})$};
+        \draw[->] (dados) -- (t1);
+        \draw[->] (t1) -- node[rot, above=1mm] {gradientes\\da perda} (t2);
+        \draw[->] (t2) -- (pts);
+        \draw[->] (pts) -- (tk);
+        \node[caixa, text width=104mm] (soma) at (85mm,-26mm) {Previsão final: soma das saídas das árvores\\[2pt] $\hat{y}_i = \sum_{k=1}^{K} f_k(\mathbf{x}_i)$};
+        \draw[->] (t1.south) -- (t1.south |- soma.north);
+        \draw[->] (t2.south) -- (t2.south |- soma.north);
+        \draw[->] (tk.south) -- (tk.south |- soma.north);
+    \end{tikzpicture}
+    \caption{Estrutura esquemática do XGBoost: cada árvore é ajustada aos gradientes da função de perda deixados pelas árvores anteriores, e a previsão é a soma das saídas}
     \label{fig:schematic_xgboost}
-    \fonte{\cite{researchgate_xgboost}}
+    \fonte{Adaptado de Chen e Guestrin~\cite{chen2016xgboost}.}
 \end{figure}
 
 \newpage
@@ -79,7 +79,7 @@ A Tabela~\ref{tab:comparativo_detalhado_tecnologias} resume as características 
     \caption{Comparativo Detalhado das Tecnologias: SARIMA, Random Forest, XGBoost e LSTM}
     \label{tab:comparativo_detalhado_tecnologias}
     \setlength{\tabcolsep}{3pt} % Reduz espaçamento entre colunas
-    \begin{tabular}{|p{0.12\textwidth}|p{0.26\textwidth}|p{0.29\textwidth}|p{0.29\textwidth}|}
+    \begin{tabular}{|p{0.12\textwidth}|p{0.25\textwidth}|p{0.285\textwidth}|p{0.285\textwidth}|}
     \hline
     \textbf{Modelo} & \textbf{Descrição} & \textbf{Vantagem} & \textbf{Desvantagem} \\ \hline
     \textbf{SARIMA / SARIMAX} & Especificação $(p,d,q)\times(P,D,Q)_s$ com componentes sazonais e, no SARIMAX, termos exógenos $X_t$. & \begin{itemize}[leftmargin=*,noitemsep,topsep=0pt] \item Captura autocorrelação e sazonalidade explícitas. \item Permite variáveis exógenas (clima). \item Alta interpretabilidade. \end{itemize} & \begin{itemize}[leftmargin=*,noitemsep,topsep=0pt] \item Relações lineares; pode subestimar não-linearidades. \item Sensível a estacionariedade; tuning custoso. \end{itemize} \\ \hline
