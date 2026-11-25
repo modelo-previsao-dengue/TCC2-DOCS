@@ -157,7 +157,7 @@ Os hiperparâmetros foram os mesmos nas nove combinações, de modo que as difer
 \texttt{colsample\_bytree} & 0,8 & Fração dos atributos sorteada para cada árvore. Impede que todas as árvores dependam dos mesmos atributos dominantes, como as notificações da semana anterior. \\ \hline
 \texttt{reg\_alpha} (L1) & 0,1 & Penalidade sobre o valor absoluto dos pesos das folhas, que leva pesos pouco úteis a zero. \\ \hline
 \texttt{reg\_lambda} (L2) & 1 & Penalidade sobre o quadrado dos pesos das folhas, que suaviza as previsões de cada árvore. \\ \hline
-\texttt{early\_stopping\_rounds} & 50 & Interrompe o treino quando o erro na validação (2023) não melhora por 50 árvores consecutivas. \\ \hline
+\texttt{early\_stopping\_\allowbreak rounds} & 50 & Interrompe o treino quando o erro na validação (2023) não melhora por 50 árvores consecutivas. \\ \hline
 \texttt{tree\_method} & \texttt{hist} & Constrói as árvores a partir de histogramas dos atributos, o que acelera o treino na série longa (157 mil linhas). \\ \hline
 \end{tabular}
 \fonte{Adaptado de Chen e Guestrin~\cite{chen2016xgboost}.}
@@ -214,7 +214,7 @@ Os cenários de atraso não removem as contagens agregadas da semana $t$ (por ex
 \subsection{Curva de Aprendizado}
 \label{sec:met_learning_curve}
 
-Para avaliar se o aumento do período de treino melhora ou degrada o desempenho, foi variado o ano de início do treino de 2001 a 2019 (com incrementos de 2 anos), mantendo fixos o teste (2024-2026) e a validação (2023). O $R^2_{\log}$ no teste foi registrado para cada tamanho de treino, com os três conjuntos de atributos.
+Para avaliar se o aumento do período de treino melhora ou degrada o desempenho, foi variado o ano de início do treino (2001, 2007, 2012, 2017 e 2019, o que corresponde a 22, 16, 11, 6 e 4~anos), mantendo fixos o fim do treino (2022), o teste (2024--2026) e a validação (2023). O $R^2_{\log}$ no teste foi registrado para cada tamanho de treino, com o conjunto de atributos de clima enriquecido.
 
 \subsection{Otimização de Hiperparâmetros (Optuna)}
 \label{sec:met_optuna}

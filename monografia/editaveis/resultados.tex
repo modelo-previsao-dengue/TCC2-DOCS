@@ -10,8 +10,8 @@ A base integrada reúne 188.512 mesorregião-semanas, de 2000 a 2026, com cobert
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.8\textwidth]{figuras/resultados_v4/fig_v4_inmet_coverage.png}
-    \caption{Proporção de mesorregião-semanas com dados climáticos, por ano (2000--2026)}
+    \includegraphics[width=\textwidth]{figuras/resultados/fig_cobertura_inmet.png}
+    \caption{Proporção de mesorregião-semanas com dados climáticos, por ano (2000--2026). As cores indicam a faixa de cobertura (abaixo de 50\%, de 50\% a 80\% e 80\% ou mais), e a linha tracejada marca o limiar de 80\%}
     \label{fig:cobertura_inmet}
     \fonte{Dados do INMET, 2000--2026.}
 \end{figure}
@@ -110,7 +110,7 @@ As métricas de momento (Seção~\ref{sec:met_momento}) avaliam diretamente o ob
 \small
 \begin{tabular}{|l|c|c|c|}
 \hline
-\textbf{Modelo} & \textbf{Pico a até 2 semanas} & \textbf{Erro mediano (sem.)} & \textbf{Erro médio (sem.)} \\ \hline
+\textbf{Modelo} & \begin{tabular}[c]{@{}c@{}}\textbf{Pico a até}\\ \textbf{2 semanas}\end{tabular} & \begin{tabular}[c]{@{}c@{}}\textbf{Erro mediano}\\ \textbf{(semanas)}\end{tabular} & \begin{tabular}[c]{@{}c@{}}\textbf{Erro médio}\\ \textbf{(semanas)}\end{tabular} \\ \hline
 Persistência & 3,9\% & 4 & $+2{,}9$ \\ \hline
 Média móvel (4 semanas) & 2,2\% & 6 & $+4{,}1$ \\ \hline
 Sazonal (ano anterior) & 30,7\% & 5 & $+9{,}3$ \\ \hline
@@ -158,8 +158,8 @@ A Figura~\ref{fig:v4_variante_comparison} visualiza o $R^2_{\log}$ das nove comb
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.85\textwidth]{figuras/resultados_v4/fig_v4_variante_comparison.png}
-    \caption{$R^2_{\log}$ das nove combinações (variante $\times$ atributos)}
+    \includegraphics[width=\textwidth]{figuras/resultados/fig_variantes.png}
+    \caption{$R^2_{\log}$ no teste das nove combinações (variante $\times$ conjunto de atributos). As barras verticais indicam o intervalo de confiança de 95\% por \textit{bootstrap}}
     \label{fig:v4_variante_comparison}
     \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
 \end{figure}
@@ -171,8 +171,8 @@ O \textit{walk-forward} expandido treinou 36~modelos (9~combinações $\times$ 4
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.85\textwidth]{figuras/resultados_v4/fig_v4_walkforward.png}
-    \caption{Validação \textit{walk-forward}: $R^2_{\log}$ por janela e variante (INMET enriquecido)}
+    \includegraphics[width=\textwidth]{figuras/resultados/fig_walkforward.png}
+    \caption{Validação \textit{walk-forward}: $R^2_{\log}$ por ano de teste e variante, com clima enriquecido. Cada ponto corresponde a um modelo treinado até o ano anterior; 2026 tem apenas 12~semanas}
     \label{fig:v4_walkforward}
     \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
 \end{figure}
@@ -184,8 +184,8 @@ A curva de aprendizado mediu o efeito do tamanho do treino sobre o desempenho, v
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.8\textwidth]{figuras/resultados_v4/fig_v4_learning_curve.png}
-    \caption{Curva de aprendizado: $R^2_{\log}$ no teste em função do número de anos de treino}
+    \includegraphics[width=\textwidth]{figuras/resultados/fig_curva_aprendizado.png}
+    \caption{Curva de aprendizado: $R^2_{\log}$ no teste (2024--2026) em função do número de anos de treino. As janelas começam em 2019, 2017, 2012, 2007 e 2001, terminam em 2022 e usam a validação de 2023; o modelo usa o clima enriquecido}
     \label{fig:v4_learning_curve}
     \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
 \end{figure}
@@ -197,8 +197,8 @@ O \textit{Population Stability Index} (PSI) foi calculado para as 20~variáveis 
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.85\textwidth]{figuras/resultados_v4/fig_v4_data_drift_psi.png}
-    \caption{PSI médio das 20~variáveis mais importantes, por ano do treino (variante~B)}
+    \includegraphics[width=\textwidth]{figuras/resultados/fig_psi_por_ano.png}
+    \caption{PSI médio das 20~variáveis mais importantes, por ano do treino da variante~B, tomando o período de teste como referência. As linhas tracejadas marcam os limiares de mudança moderada (0,10) e relevante (0,25) da distribuição}
     \label{fig:v4_drift_psi}
     \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
 \end{figure}
@@ -221,8 +221,8 @@ O tamanho reduzido do ganho do clima é coerente com o que a literatura descreve
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.75\textwidth]{figuras/resultados_v4/fig_v4_delta_mesorregiao_B_vs_A.png}
-    \caption{Variação do $R^2_{\log}$ com a série longa (variante~B $-$ variante~A, clima enriquecido), por mesorregião (código IBGE): 20 maiores ganhos e 20 maiores perdas}
+    \includegraphics[width=\textwidth]{figuras/resultados/fig_delta_serie_longa.png}
+    \caption{Variação do $R^2_{\log}$ com a série longa (variante~B $-$ variante~A, clima enriquecido) nas 137 mesorregiões, em ordem decrescente. Verde indica ganho e vermelho, perda. Os maiores ganhos ocorreram no Norte Amazonense (AM, $+0{,}22$), no Central Potiguar (RN, $+0{,}15$) e no Centro Goiano (GO, $+0{,}14$); as maiores perdas, no São Francisco Pernambucano (PE, $-0{,}09$), no Norte de Roraima (RR, $-0{,}08$) e no Agreste Sergipano (SE, $-0{,}05$)}
     \label{fig:delta_meso}
     \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
 \end{figure}
@@ -301,11 +301,10 @@ C & INMET enriq.  & 0,583 & 0,836 & 0,606 & \textbf{0,739} \\ \hline
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.85\textwidth]{figuras/resultados_v4/fig_v4_cls_f1_comparison.png}
-    \caption{F1 por classe de risco: variantes A, B e C (INMET enriquecido)}
+    \includegraphics[width=\textwidth]{figuras/resultados/fig_f1_por_classe.png}
+    \caption{F1 do classificador por nível de risco nas variantes A, B e C, com clima enriquecido}
     \label{fig:v4_cls_f1}
     \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
-    \nota{Na figura, a classe ``surto'' corresponde ao nível de risco muito alto (Seção~\ref{sec:classes_risco}).}
 \end{figure}
 
 O ganho da série longa é expressivo na classificação: a variante~B superou a~A em $+0{,}084$ de F1~macro e $+0{,}056$ de AUC~OVR. Esse ganho é maior do que o observado na regressão ($+0{,}015$), indicando que a série longa ajuda especialmente na separação de classes extremas. Os resultados da classificação com a pipeline anterior (v3), que usava janela curta, estão no Apêndice~\ref{ap:comparacao_v3}.
