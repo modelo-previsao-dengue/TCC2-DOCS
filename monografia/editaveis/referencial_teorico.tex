@@ -157,6 +157,7 @@ Para a classificação do nível de risco, foram utilizados o F1 por classe, o F
 Os valores SHAP (\textit{SHapley Additive exPlanations}) \cite{lundberg2017unified} decompõem cada previsão em contribuições aditivas das variáveis de entrada, com base nos valores de Shapley da teoria dos jogos cooperativos. Para modelos de árvores, o algoritmo TreeExplainer calcula esses valores de forma exata e eficiente \cite{lundberg2020local}. A média do valor absoluto das contribuições ordena as variáveis por importância global, e a relação entre o valor de uma variável e a sua contribuição permite identificar limiares a partir dos quais a variável passa a aumentar ou a reduzir a previsão.
 
 \section{Definição de Surto e Canal Endêmico}
+\label{sec:ref_canal_endemico}
 
 A vigilância epidemiológica tradicionalmente define surto a partir do canal endêmico: para cada semana epidemiológica, calcula-se a média (ou mediana) e a dispersão das contagens em anos anteriores, e considera-se epidêmica a semana cuja contagem excede o limite superior do canal \cite{bortman1999canal}. A escolha da definição tem grande efeito sobre a proporção de semanas classificadas como surto: \citeonline{brady2015outbreak} mostraram que as definições usadas na prática variam de forma incompatível com a heterogeneidade real da transmissão. Por isso, alertas derivados de modelos devem explicitar a definição de surto adotada e, sempre que possível, ser comparados com a regra trivial de repetir o estado atual.
 
