@@ -22,11 +22,11 @@ A existência de defasagens temporais (lags) entre variações climáticas e cas
 A Figura \ref{fig:dengue_clima_goiania} exemplifica essa complexa interação entre variáveis climáticas e incidência de dengue, apresentando dados da cidade de Goiânia que ilustram como picos de casos frequentemente coincidem com padrões sazonais específicos de temperatura e precipitação \cite{basedosdados2024dengue}, evidenciando a importância de considerar múltiplas variáveis climáticas simultaneamente em modelos preditivos.
 
 \begin{figure}[htb]
-    \caption{Relação entre variáveis climáticas e casos de dengue em Goiânia.}
     \centering
     \includegraphics[width=0.6\textwidth]{figuras/Dengue e Clima Goiania.png}
-    \fonte{\cite{basedosdados2024dengue}}
+    \caption{Relação entre variáveis climáticas e casos de dengue em Goiânia.}
     \label{fig:dengue_clima_goiania}
+    \fonte{\cite{basedosdados2024dengue}}
 \end{figure}
 
 \section{Abordagens de Modelagem para Previsão de Dengue}
@@ -36,11 +36,11 @@ A modelagem preditiva aplicada a doenças infecciosas tem evoluído significativ
 A Figura \ref{fig:schematic_sarima} apresenta a estrutura esquemática do modelo SARIMA, ilustrando seus componentes autoregressivos (AR), de diferenciação (I) e de média móvel (MA), tanto para a parte não-sazonal quanto para a parte sazonal, evidenciando como o modelo captura padrões temporais complexos através da combinação desses elementos.
 
 \begin{figure}[htb]
-    \caption{Estrutura esquemática do modelo SARIMA.}
     \centering
     \includegraphics[width=0.8\textwidth]{figuras/Schematic-SARIMA.png}
-    \fonte{\cite{gong2023sarima}}
+    \caption{Estrutura esquemática do modelo SARIMA.}
     \label{fig:schematic_sarima}
+    \fonte{\cite{gong2023sarima}}
 \end{figure}
 
 \subsection{Modelos de Aprendizado de Máquina}
@@ -51,21 +51,21 @@ Os métodos de aprendizado de máquina têm demonstrado capacidade superior em c
 A Figura \ref{fig:schematic_random_forest} ilustra o funcionamento do algoritmo Random Forest, mostrando como múltiplas árvores de decisão são construídas a partir de amostras bootstrap dos dados originais e subconjuntos aleatórios de features, com a predição final obtida pela agregação (média ou votação) das predições individuais de cada árvore, reduzindo a variância e melhorando a generalização.
 
 \begin{figure}[htb]
-    \caption{Estrutura esquemática do modelo Random Forest.}
     \centering
     \includegraphics[width=0.6\textwidth]{figuras/Schematic-Random Forest.png}
-    \fonte{\cite{researchgate_randomforest}}
+    \caption{Estrutura esquemática do modelo Random Forest.}
     \label{fig:schematic_random_forest}
+    \fonte{\cite{researchgate_randomforest}}
 \end{figure}
 
 O \textit{eXtreme Gradient Boosting} (XGBoost), algoritmo adotado neste trabalho, constrói árvores de decisão de forma sequencial, cada uma corrigindo os erros das anteriores (Seção~\ref{sec:xgboost}). Estudos recentes mostram que XGBoost alcança desempenho superior a Random Forest e a modelos estatísticos clássicos em previsão de dengue, especialmente quando variáveis climáticas são incorporadas~\cite{roster2022machine,mussumeci2020large,ferdousi2021windowed}.
 
 \begin{figure}[htb]
-    \caption{Estrutura esquemática do modelo XGBoost.}
     \centering
     \includegraphics[width=0.6\textwidth]{figuras/Schematic-XGBoost.png}
-    \fonte{\cite{researchgate_xgboost}}
+    \caption{Estrutura esquemática do modelo XGBoost.}
     \label{fig:schematic_xgboost}
+    \fonte{\cite{researchgate_xgboost}}
 \end{figure}
 
 \newpage
@@ -96,10 +96,9 @@ Os efeitos climáticos sobre a incidência não são imediatos: eles percorrem u
 
 \begin{figure}[!htb]
     \centering
-    \caption{Defasagens temporais entre variáveis climáticas e casos de dengue}
     \includegraphics[width=0.95\textwidth]{figuras/DiagramaReferialTeorico_DefasagensTemporais.png}
+    \caption{Defasagens temporais entre variáveis climáticas e casos de dengue}
     \label{fig:defasagens_temporais}
-    \fonte{Elaboração própria, 2025.}
 \end{figure}
 
 Apesar da evidência consolidada sobre a associação clima--dengue~\cite{the_occurrence_dengue_weather_brazil}, permanecem lacunas que este trabalho busca endereçar: a comparação dos modelos de aprendizado de máquina com previsores ingênuos avaliados nos mesmos dados, sem a qual o ganho do modelo não pode ser distinguido da simples autocorrelação da série; a avaliação em escala nacional, cobrindo a heterogeneidade regional em um único protocolo; a quantificação do ganho marginal do clima quando a própria série de casos já está disponível como preditor; e a atenção à qualidade dos dados públicos de entrada, cujos defeitos podem produzir associações espúrias.

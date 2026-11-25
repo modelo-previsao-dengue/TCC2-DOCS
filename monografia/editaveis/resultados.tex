@@ -10,10 +10,10 @@ A base integrada reúne 188.512 mesorregião-semanas, de 2000 a 2026, com cobert
 
 \begin{figure}[htb]
     \centering
-    \caption{Proporção de mesorregião-semanas com dados climáticos, por ano (2000--2026)}
     \includegraphics[width=0.8\textwidth]{figuras/resultados_v4/fig_v4_inmet_coverage.png}
+    \caption{Proporção de mesorregião-semanas com dados climáticos, por ano (2000--2026)}
     \label{fig:cobertura_inmet}
-    \fonte{Elaboração própria a partir de \citeonline{inmet2025}.}
+    \fonte{Dados do INMET, 2000--2026.}
 \end{figure}
 
 As correções de dados descritas na Seção~\ref{sec:correcoes} tiveram efeito expressivo sobre os resultados. A comparação detalhada da mesma pipeline executada antes e depois das correções é apresentada no Apêndice~\ref{ap:comparacao_v3}. As duas principais inversões de conclusão foram: (i) o clima passou a ajudar de forma significativa nos cenários de atraso na notificação, nos quais antes a diferença era negativa e não significativa; e (ii) a variável climática mais associada aos casos deixou de ser a ``umidade'', cujo limiar de 15,7\% era, na verdade, uma temperatura de ponto de orvalho em graus Celsius, e passou a ser a temperatura mínima, com limiar fisicamente plausível.
@@ -49,10 +49,10 @@ XGBoost realista, série longa & \textbf{0,889} & 0,395 & \textbf{250,1} & --- \
 
 \begin{figure}[htb]
     \centering
-    \caption{$R^2$ nas escalas logarítmica e original: XGBoost e previsores ingênuos}
     \includegraphics[width=\textwidth]{figuras/resultados/fig_baselines_vs_xgboost.png}
+    \caption{$R^2$ nas escalas logarítmica e original: XGBoost e previsores ingênuos}
     \label{fig:baselines}
-    \fonte{Elaboração própria.}
+    \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
 \end{figure}
 
 As duas escalas medem coisas diferentes (Capítulo~\ref{cap:referencial}). O $R^2_{\log}$ dá peso comparável a todas as mesorregiões e semanas e mostra que o modelo acompanha melhor que os baselines a dinâmica relativa da série, inclusive nas mesorregiões e períodos com poucas notificações. O $R^2$ na escala original é dominado pelas semanas com milhares de notificações, e nelas o modelo erra por muito. O baseline sazonal, com $R^2$ negativo, confirma que repetir o ano anterior é pior que prever a média: a dengue não se repete de um ano para o outro com a mesma intensidade.
@@ -70,27 +70,28 @@ A desagregação por ano (Tabela~\ref{tab:por_ano}) mostra de onde vem a desvant
 \begin{tabular}{|c|l|c|c|r|r|}
 \hline
 \textbf{Ano} & \textbf{Modelo} & \textbf{$R^2$} & \textbf{$R^2_{\log}$} & \textbf{MAE} & \textbf{Previsto / real (mi)} \\ \hline
-2024 & Persistência & \textbf{0,660} & 0,839 & 530,9 & 6,56 / 6,44 \\ \hline
-2024 & Só SINAN & 0,355 & 0,913 & 489,7 & 3,57 / 6,44 \\ \hline
-2024 & + clima enriquecido & 0,383 & \textbf{0,918} & \textbf{464,4} & 3,77 / 6,44 \\ \hline
-2025 & Persistência & 0,714 & 0,833 & 107,7 & 1,64 / 1,55 \\ \hline
-2025 & Só SINAN & 0,809 & 0,890 & 72,9 & 1,36 / 1,55 \\ \hline
-2025 & + clima enriquecido & \textbf{0,822} & \textbf{0,900} & \textbf{69,4} & 1,40 / 1,55 \\ \hline
-2026 & Persistência & 0,615 & 0,503 & 72,7 & 0,18 / 0,22 \\ \hline
-2026 & Só SINAN & \textbf{0,738} & 0,559 & 63,1 & 0,21 / 0,22 \\ \hline
-2026 & + clima enriquecido & 0,737 & \textbf{0,571} & \textbf{62,2} & 0,22 / 0,22 \\ \hline
+2024 & Persistência & \textbf{0,660} & 0,839 & 531 & 6,56 / 6,44 \\ \hline
+2024 & Só SINAN & 0,355 & 0,913 & 490 & 3,57 / 6,44 \\ \hline
+2024 & + clima enriquecido & 0,383 & \textbf{0,918} & \textbf{464} & 3,77 / 6,44 \\ \hline
+2025 & Persistência & 0,714 & 0,833 & 108 & 1,64 / 1,55 \\ \hline
+2025 & Só SINAN & 0,809 & 0,890 & 73 & 1,36 / 1,55 \\ \hline
+2025 & + clima enriquecido & \textbf{0,822} & \textbf{0,900} & \textbf{69} & 1,40 / 1,55 \\ \hline
+2026 & Persistência & 0,615 & 0,503 & 73 & 0,18 / 0,22 \\ \hline
+2026 & Só SINAN & \textbf{0,738} & 0,559 & 63 & 0,21 / 0,22 \\ \hline
+2026 & + clima enriquecido & 0,737 & \textbf{0,571} & \textbf{62} & 0,22 / 0,22 \\ \hline
 \end{tabular}
-\fonte{Elaboração própria (script~57). Previsto e real em milhões de notificações no ano; 2026 até a semana~12.}
+\fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
+\nota{Previsto e real em milhões de notificações no ano; 2026 até a semana~12. Script~57.}
 \end{table}
 
 A Figura~\ref{fig:serie_nacional} mostra o comportamento na série nacional, somando as 137 mesorregiões. Em 2024, o modelo acompanha a subida e a queda da epidemia no tempo certo, e o seu máximo ocorre uma semana antes do máximo observado, mas satura em pouco mais da metade da altura do pico. A persistência atinge a altura correta, mas com quatro semanas de atraso, que é exatamente o horizonte de previsão. Em 2025, uma temporada menor e de pico mais achatado, o modelo segue a série observada de perto durante a subida e a descida.
 
 \begin{figure}[htb]
     \centering
-    \caption{Notificações semanais observadas e previstas no conjunto de teste (soma das 137 mesorregiões)}
     \includegraphics[width=\textwidth]{figuras/resultados/fig_serie_nacional_teste.png}
+    \caption{Notificações semanais observadas e previstas no conjunto de teste (soma das 137 mesorregiões)}
     \label{fig:serie_nacional}
-    \fonte{Elaboração própria.}
+    \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
 \end{figure}
 
 Dois mecanismos, descritos no Capítulo~\ref{cap:referencial}, explicam esse comportamento. O primeiro é a incapacidade de extrapolação das árvores: o maior ano do treino da série longa (2015) teve cerca de 2,4 milhões de notificações, e o modelo não consegue produzir valores muito acima da faixa que viu. O segundo é o treinamento sobre $\log(1+y)$, que minimiza erros relativos e tende a subestimar os valores extremos quando a previsão é revertida para a escala original. A persistência, por construção, não tem teto: repete qualquer valor, inclusive um inédito. O resultado responde de forma direta ao ``teste de estresse'' proposto no TCC~1: o modelo antecipa o \textit{momento} de uma epidemia extrema, mas não a sua \textit{magnitude}.
@@ -116,7 +117,8 @@ Sazonal (ano anterior) & 30,7\% & 5 & $+9{,}3$ \\ \hline
 XGBoost, série longa, só SINAN & 44,7\% & 3 & $-0{,}3$ \\ \hline
 XGBoost, série longa + clima enriq. & \textbf{48,0\%} & \textbf{3} & $\mathbf{-0{,}2}$ \\ \hline
 \end{tabular}
-\fonte{Elaboração própria (script~57). Erro positivo indica pico previsto depois do observado; $n=179$ mesorregião-temporadas.}
+\fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
+\nota{Erro positivo indica pico previsto depois do observado; $n=179$ mesorregião-temporadas. Script~57.}
 \end{table}
 
 O modelo também acerta o sentido da variação: entre as 10.367 mesorregião-semanas em que as notificações mudaram de forma relevante entre $t$ e $t+4$, a previsão indicou corretamente se elas iriam subir ou descer em 82\% dos casos, contra 56\% de uma regra ingênua que repete a tendência da última semana. A persistência, por construção, não indica direção alguma. O clima contribui nos dois indicadores: sem ele, o pico a até duas semanas cai de 48\% para 45\% e o acerto de direção, de 82\% para 80\%.
@@ -128,7 +130,7 @@ Esses resultados qualificam a comparação da Seção~\ref{sec:res_baselines}. A
 \section{Contribuição das Variáveis Climáticas}
 \label{sec:res_clima}
 
-A inclusão do clima melhorou o modelo de forma pequena, mas consistente e estatisticamente significativa. Na variante~B (22~anos), o $R^2_{\log}$ passou de 0,882 (só SINAN) para 0,885 (+INMET bruto, $\Delta=+0{,}003$) e 0,890 (+INMET enriquecido, $\Delta=+0{,}008$); na variante~A (4~anos), o ganho total foi semelhante: de 0,869 para 0,874 ($\Delta=+0{,}005$). O teste de Diebold-Mariano sobre a perda semanal agregada entre mesorregiões (que elimina a correlação espacial) confirma a significância ($\mathrm{DM}=3{,}85$, $p < 10^{-3}$), e o bootstrap em blocos produz IC~95\% de $[0{,}006; 0{,}010]$ para o $\Delta R^2_{\log}$, inteiramente positivo. Na escala original, o ganho do clima é proporcionalmente maior: o $R^2$ passou de 0,385 para 0,410 na variante~B e o MAE caiu 5\%.
+A inclusão do clima melhorou o modelo de forma pequena, mas consistente e estatisticamente significativa. Na variante~B (22~anos), o $R^2_{\log}$ passou de 0,882 (só SINAN) para 0,885 (+INMET bruto, $\Delta=+0{,}003$) e 0,890 (+INMET enriquecido, $\Delta=+0{,}008$); na variante~A (4~anos), o ganho total foi semelhante: de 0,869 para 0,874 ($\Delta=+0{,}005$). O teste de Diebold-Mariano sobre a perda semanal agregada entre mesorregiões (que elimina a correlação espacial) confirma a significância ($\mathrm{DM}=3{,}85$, $p < 0{,}001$), e o bootstrap em blocos produz IC~95\% de $[0{,}006; 0{,}010]$ para o $\Delta R^2_{\log}$, inteiramente positivo. Na escala original, o ganho do clima é proporcionalmente maior: o $R^2$ passou de 0,385 para 0,410 na variante~B e o MAE caiu 5\%.
 
 O ganho se repetiu na validação \textit{walk-forward} (Seção~\ref{sec:res_walkforward}): na série longa, o modelo com clima enriquecido superou o ``só SINAN'' nas quatro janelas (testes de 2023 a 2026), com média de $R^2_{\log}$ de 0,809 contra 0,803. As janelas também mostram a instabilidade entre anos, com $R^2_{\log}$ entre 0,56 e 0,92: o desempenho depende fortemente das características de cada temporada.
 
@@ -138,10 +140,10 @@ O tamanho reduzido do ganho do clima é coerente com o que a literatura descreve
 
 \begin{figure}[htb]
     \centering
-    \caption{Variação do $R^2_{\log}$ com a série longa (variante~B $-$ variante~A, clima enriquecido), por mesorregião (código IBGE): 20 maiores ganhos e 20 maiores perdas}
     \includegraphics[width=0.75\textwidth]{figuras/resultados_v4/fig_v4_delta_mesorregiao_B_vs_A.png}
+    \caption{Variação do $R^2_{\log}$ com a série longa (variante~B $-$ variante~A, clima enriquecido), por mesorregião (código IBGE): 20 maiores ganhos e 20 maiores perdas}
     \label{fig:delta_meso}
-    \fonte{Elaboração própria.}
+    \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
 \end{figure}
 
 \section{Clima na Ausência de Dados Epidemiológicos Recentes}
@@ -184,12 +186,13 @@ O Distrito Federal, foco do TCC~1, corresponde a uma única mesorregião, com 11
 \begin{tabular}{|l|c|c|r|r|}
 \hline
 \textbf{Modelo} & \textbf{$R^2_{\log}$} & \textbf{$R^2$} & \textbf{MAE} & \textbf{Previsto / real (mil)} \\ \hline
-Persistência & \textbf{0,862} & 0,644 & 1.194,7 & 290 / 255 \\ \hline
-Janela curta, só SINAN & 0,785 & 0,463 & 1.247,9 & 132 / 255 \\ \hline
-Série longa, só SINAN & 0,847 & 0,526 & 1.182,5 & 146 / 255 \\ \hline
-Série longa + clima enriq. & 0,856 & \textbf{0,694} & \textbf{975,4} & 201 / 255 \\ \hline
+Persistência & \textbf{0,862} & 0,644 & 1.195 & 290 / 255 \\ \hline
+Janela curta, só SINAN & 0,785 & 0,463 & 1.248 & 132 / 255 \\ \hline
+Série longa, só SINAN & 0,847 & 0,526 & 1.183 & 146 / 255 \\ \hline
+Série longa + clima enriq. & 0,856 & \textbf{0,694} & \textbf{975} & 201 / 255 \\ \hline
 \end{tabular}
-\fonte{Elaboração própria (script~57).}
+\fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
+\nota{Script~57.}
 \end{table}
 
 Os totais do teste não coincidem com as cerca de 277 mil notificações de residentes do DF em 2024 porque o alvo de cada linha é a semana $t+4$: as quatro primeiras semanas de 2024 ficam fora do teste, e 2025 e 2026 tiveram poucos casos no DF.
@@ -211,7 +214,7 @@ Município & \textbf{0,400} & 0,361 & 0,390 & +0,029 \\ \hline
 Mesorregião & 0,397 & 0,381 & \textbf{0,487} & +0,106 \\ \hline
 UF & 0,454 & \textbf{0,625} & 0,528 & $-$0,097 \\ \hline
 \end{tabular}
-\fonte{Elaboração própria a partir de \citeonline{modeloprevisao2026}.}
+\fonte{Dados do SINAN (DATASUS) e do INMET; experimento disponível no repositório MODELO-PREVISAO~\cite{modeloprevisao2026}.}
 \end{table}
 
 \section{Resultados das Variantes de Janela Temporal}
@@ -227,27 +230,28 @@ A Tabela~\ref{tab:v4_variantes} apresenta os resultados das nove combinações (
 \begin{tabular}{|l|l|c|c|c|r|r|}
 \hline
 \textbf{Variante} & \textbf{Atributos} & \textbf{$N_{\mathrm{feat}}$} & \textbf{$R^2_{\log}$} & \textbf{IC 95\%} & \textbf{$R^2$} & \textbf{MAE} \\ \hline
-A (4 anos) & Só SINAN      & 110 & 0,869 & [0,863; 0,875] & 0,314 & 275,7 \\ \hline
-A (4 anos) & INMET bruto    & 122 & 0,871 & [0,865; 0,878] & 0,340 & 263,8 \\ \hline
-A (4 anos) & INMET enriq.   & 266 & 0,874 & [0,868; 0,880] & 0,348 & 263,0 \\ \hline
-B (22 anos) & Só SINAN     & 110 & 0,882 & [0,877; 0,887] & 0,385 & 257,0 \\ \hline
-B (22 anos) & INMET bruto   & 122 & 0,885 & [0,880; 0,891] & 0,405 & 248,4 \\ \hline
-B (22 anos) & INMET enriq.  & 266 & \textbf{0,890} & [0,884; 0,894] & 0,410 & \textbf{244,4} \\ \hline
-C (22 anos + peso) & Só SINAN    & 110 & 0,879 & [0,874; 0,884] & 0,361 & 261,7 \\ \hline
-C (22 anos + peso) & INMET bruto  & 122 & 0,883 & [0,878; 0,889] & \textbf{0,421} & 246,8 \\ \hline
-C (22 anos + peso) & INMET enriq. & 266 & 0,888 & [0,882; 0,893] & 0,403 & 246,8 \\ \hline
+A (4 anos) & Só SINAN      & 110 & 0,869 & [0,863; 0,875] & 0,314 & 276 \\ \hline
+A (4 anos) & INMET bruto    & 122 & 0,871 & [0,865; 0,878] & 0,340 & 264 \\ \hline
+A (4 anos) & INMET enriq.   & 266 & 0,874 & [0,868; 0,880] & 0,348 & 263 \\ \hline
+B (22 anos) & Só SINAN     & 110 & 0,882 & [0,877; 0,887] & 0,385 & 257 \\ \hline
+B (22 anos) & INMET bruto   & 122 & 0,885 & [0,880; 0,891] & 0,405 & 248 \\ \hline
+B (22 anos) & INMET enriq.  & 266 & \textbf{0,890} & [0,884; 0,894] & 0,410 & \textbf{244} \\ \hline
+C (22 anos + peso) & Só SINAN    & 110 & 0,879 & [0,874; 0,884] & 0,361 & 262 \\ \hline
+C (22 anos + peso) & INMET bruto  & 122 & 0,883 & [0,878; 0,889] & \textbf{0,421} & 247 \\ \hline
+C (22 anos + peso) & INMET enriq. & 266 & 0,888 & [0,882; 0,893] & 0,403 & 247 \\ \hline
 \end{tabular}
-\fonte{Elaboração própria. IC~95\% por bootstrap (1.000~reamostragens).}
+\fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
+\nota{IC~95\% por bootstrap (1.000~reamostragens).}
 \end{table}
 
 A Figura~\ref{fig:v4_variante_comparison} visualiza o $R^2_{\log}$ das nove combinações. O ganho da série longa (B) sobre a curta (A) é de $+0{,}015$, consistente em todos os conjuntos de atributos. O clima enriquecido acrescenta $+0{,}005$ sobre o ``só SINAN'' na variante~A e $+0{,}008$ na variante~B. Os testes de significância utilizam Diebold-Mariano com correção de Newey-West ($h=4$) e bootstrap em blocos (mesorregião$\times$ano, 5.000 iterações), que são adequados à correlação temporal e espacial dos dados; testes~$t$ pareados sobre observações individuais produziriam $p$-values inflados pela autocorrelação.
 
 \begin{figure}[htb]
     \centering
-    \caption{$R^2_{\log}$ das nove combinações (variante $\times$ atributos)}
     \includegraphics[width=0.85\textwidth]{figuras/resultados_v4/fig_v4_variante_comparison.png}
+    \caption{$R^2_{\log}$ das nove combinações (variante $\times$ atributos)}
     \label{fig:v4_variante_comparison}
-    \fonte{Elaboração própria.}
+    \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
 \end{figure}
 
 \section{Curva de Aprendizado}
@@ -257,10 +261,10 @@ A curva de aprendizado mediu o efeito do tamanho do treino sobre o desempenho, v
 
 \begin{figure}[htb]
     \centering
-    \caption{Curva de aprendizado: $R^2_{\log}$ no teste em função do número de anos de treino}
     \includegraphics[width=0.8\textwidth]{figuras/resultados_v4/fig_v4_learning_curve.png}
+    \caption{Curva de aprendizado: $R^2_{\log}$ no teste em função do número de anos de treino}
     \label{fig:v4_learning_curve}
-    \fonte{Elaboração própria.}
+    \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
 \end{figure}
 
 \section{Análise de Drift (PSI)}
@@ -270,10 +274,10 @@ O \textit{Population Stability Index} (PSI) foi calculado para as 20~variáveis 
 
 \begin{figure}[htb]
     \centering
-    \caption{PSI médio das 20~variáveis mais importantes, por ano do treino (variante~B)}
     \includegraphics[width=0.85\textwidth]{figuras/resultados_v4/fig_v4_data_drift_psi.png}
+    \caption{PSI médio das 20~variáveis mais importantes, por ano do treino (variante~B)}
     \label{fig:v4_drift_psi}
-    \fonte{Elaboração própria.}
+    \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
 \end{figure}
 
 \section{Optuna: Otimização de Hiperparâmetros}
@@ -288,10 +292,10 @@ O \textit{walk-forward} expandido treinou 36~modelos (9~combinações $\times$ 4
 
 \begin{figure}[htb]
     \centering
-    \caption{Validação \textit{walk-forward}: $R^2_{\log}$ por janela e variante (INMET enriquecido)}
     \includegraphics[width=0.85\textwidth]{figuras/resultados_v4/fig_v4_walkforward.png}
+    \caption{Validação \textit{walk-forward}: $R^2_{\log}$ por janela e variante (INMET enriquecido)}
     \label{fig:v4_walkforward}
-    \fonte{Elaboração própria.}
+    \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
 \end{figure}
 
 \section{Classificação em Quatro Faixas de Risco}
@@ -314,7 +318,8 @@ Classificador XGBoost B & 0,456 & 0,498 \\ \hline
 Persistência $\rightarrow$ limiares & 0,650 & 0,674 \\ \hline
 Regressão realista $\rightarrow$ limiares & \textbf{0,722} & \textbf{0,734} \\ \hline
 \end{tabular}
-\fonte{Elaboração própria (script~61). Os limiares são P50/P75/P90 de \texttt{notificacoes\_t4} por mesorregião no treino~B.}
+\fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
+\nota{Os limiares são P50/P75/P90 de \texttt{notificacoes\_t4} por mesorregião no treino~B. Script~61.}
 \end{table}
 
 \begin{table}[htb]
@@ -335,15 +340,15 @@ C & Só SINAN     & 0,561 & 0,815 & 0,578 & 0,714 \\ \hline
 C & INMET bruto   & 0,580 & 0,834 & 0,603 & 0,728 \\ \hline
 C & INMET enriq.  & 0,583 & 0,836 & 0,606 & \textbf{0,739} \\ \hline
 \end{tabular}
-\fonte{Elaboração própria.}
+\fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
 \end{table}
 
 \begin{figure}[htb]
     \centering
-    \caption{F1 por classe de risco: variantes A, B e C (INMET enriquecido)}
     \includegraphics[width=0.85\textwidth]{figuras/resultados_v4/fig_v4_cls_f1_comparison.png}
+    \caption{F1 por classe de risco: variantes A, B e C (INMET enriquecido)}
     \label{fig:v4_cls_f1}
-    \fonte{Elaboração própria.}
+    \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
 \end{figure}
 
 O ganho da série longa é expressivo na classificação: a variante~B superou a~A em $+0{,}084$ de F1~macro e $+0{,}056$ de AUC~OVR. Esse ganho é maior do que o observado na regressão ($+0{,}015$), indicando que a série longa ajuda especialmente na separação de classes extremas. Os resultados da classificação com a pipeline anterior (v3), que usava janela curta e rótulos A/B/C para conjuntos de atributos, estão no Apêndice~\ref{ap:comparacao_v3}.
@@ -355,10 +360,10 @@ Os valores SHAP foram calculados para o modelo realista (sem vazamento temporal)
 
 \begin{figure}[htb]
     \centering
-    \caption{SHAP: comparação das 10~variáveis mais importantes nas variantes~A e~B}
     \includegraphics[width=0.85\textwidth]{figuras/resultados_v4/fig_v4_shap_comparison.png}
+    \caption{SHAP: comparação das 10~variáveis mais importantes nas variantes~A e~B}
     \label{fig:v4_shap}
-    \fonte{Elaboração própria.}
+    \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
 \end{figure}
 
 \section{Síntese}
