@@ -2,6 +2,107 @@
 
 \partapendices
 
+\chapter{Algoritmos e Repositórios}
+\label{ap:algoritmos}
+
+Este apêndice reúne os detalhes de implementação que sustentam o Capítulo~\ref{cap:metodologia}: os repositórios em que o código e os dados estão publicados, a organização dos dados em camadas, o procedimento de agregação mesorregional, o cálculo das métricas de pico e de estabilidade distribucional e a função de cada script da pipeline v4.
+
+\section{Repositórios e Dados Publicados}
+\label{ap:repositorios}
+
+\begin{itemize}
+    \item \textbf{Código da pipeline e do painel:} repositório MODELO-PREVISAO~\cite{modeloprevisao2026}, com os scripts, a configuração da divisão temporal (\texttt{config/recorte.json}), os relatórios JSON de cada etapa e o código do painel.\newline \url{https://github.com/modelo-previsao-dengue/MODELO-PREVISAO}
+    \item \textbf{Texto da monografia:} repositório TCC2-DOCS, com o código-fonte \LaTeX{}, as figuras e o arquivo \texttt{RASTREABILIDADE.md}, que relaciona cada número do texto ao relatório que o produziu.\newline \url{https://github.com/modelo-previsao-dengue/TCC2-DOCS}
+    \item \textbf{Dados e modelos:} HuggingFace Datasets, com as camadas Bronze, Silver e Gold, os conjuntos de treino e teste, os modelos treinados e os relatórios.\newline \url{https://huggingface.co/datasets/pedrolucassantanaf/dengue-tcc2-data}
+    \item \textbf{Notebooks:} Kaggle.\newline \url{https://www.kaggle.com/pedrolucassantana}
+    \item \textbf{Painel interativo:} Streamlit Community Cloud.\newline \url{https://modelo-previsao-ffqc3ugltpbxxeaa4mygvw.streamlit.app}
+\end{itemize}
+
+\section{Organização dos Dados em Camadas}
+\label{ap:camadas}
+
+Os dados de ambas as fontes foram organizados segundo a arquitetura em camadas Bronze, Silver e Gold, armazenadas em formato Parquet. Cada execução gera uma versão nomeada (por exemplo, \texttt{sinan\_tcc2\_v2}), o que permite reproduzir qualquer resultado a partir da versão correspondente.
+
+\begin{itemize}
+    \item \textbf{Bronze:} os arquivos originais, sem transformação de conteúdo. No SINAN, os microdados anuais de dengue do OpenDataSUS, inventariados com origem, tamanho e soma de verificação (\textit{checksum}); no INMET, os arquivos horários das estações automáticas.
+    \item \textbf{Silver:} os dados limpos e padronizados. No SINAN, datas, tipos e códigos territoriais normalizados, duplicidades exatas removidas, registros sem semana epidemiológica ou município válidos descartados com registro do descarte, e uma linha por município e semana de notificação; no INMET, colunas mapeadas para nomes padronizados, o valor sentinela $-9999$ convertido em ausente e agregação por estação e semana epidemiológica.
+    \item \textbf{Gold:} os dados prontos para a modelagem. No SINAN, a contagem de notificações e os atributos clínicos e demográficos por município de residência e semana de notificação, em grade densa, com as semanas sem notificação preenchidas com zero. No INMET, a camada Silver já é a entrada da agregação mesorregional.
+\end{itemize}
+
+\section{Agregação Mesorregional}
+\label{ap:agregacao}
+
+A série de modelagem foi construída pelos passos a seguir.
+
+\begin{enumerate}
+    \item Cada estação do INMET é associada ao município mais próximo, pela distância haversine entre as coordenadas da estação e as do município, e, por meio dele, à sua mesorregião, segundo a hierarquia do IBGE.
+    \item Cada município do SINAN é associado à sua mesorregião pela mesma hierarquia.
+    \item Para cada mesorregião e semana epidemiológica, as contagens de notificações dos municípios são somadas, e as proporções e os índices clínicos são combinados por média ponderada pelo número de notificações de cada município.
+    \item Para cada mesorregião e semana epidemiológica, cada variável climática é a média aritmética simples das estações da mesorregião com dado naquela semana. Se nenhuma estação tem dado, a variável fica ausente.
+    \item As duas séries são unidas pela chave (mesorregião, ano epidemiológico, semana epidemiológica), mantendo todas as semanas da série epidemiológica. Um indicador binário registra se a semana tem dado climático; ele é usado apenas como metadado, e não como atributo do modelo.
+    \item Como verificação, a execução é interrompida se houver chaves duplicadas ou se o número de mesorregiões for diferente de 137, e a soma das notificações das mesorregiões em cada ano é comparada com o total da camada Gold.
+\end{enumerate}
+
+\section{Métricas de Pico e de Estabilidade Distribucional}
+\label{ap:metricas}
+
+\paragraph{Erro na semana do pico.} Para cada mesorregião $m$ e temporada $s$ com ao menos uma semana no nível de risco mais alto, sejam $y_{m,s}(w)$ e $\hat{y}_{m,s}(w)$ as notificações observadas e previstas na semana $w$. O erro na semana do pico é
+\begin{equation}
+e_{m,s} = \mathop{\mathrm{arg\,max}}_{w} \hat{y}_{m,s}(w) - \mathop{\mathrm{arg\,max}}_{w} y_{m,s}(w),
+\end{equation}
+em semanas. Valores positivos indicam pico previsto depois do observado. São reportados a proporção de temporadas com $|e_{m,s}| \leq 2$, a mediana de $|e_{m,s}|$ e a média de $e_{m,s}$.
+
+\paragraph{\textit{Population Stability Index} (PSI).} Para cada atributo, a distribuição do conjunto de teste é tomada como referência e dividida em $k=10$ faixas pelos seus decis (faixas com limites repetidos são unidas; se restarem menos de duas faixas, o PSI é zero). Em seguida, conta-se quantos valores de cada ano de treino caem em cada faixa. Com $n_i$ e $N$ o número de valores na faixa~$i$ e o total, as proporções são suavizadas por
+\begin{equation}
+p_i = \frac{n_i + 1}{N + k},
+\end{equation}
+o que evita divisões por zero em faixas vazias. Com $r_i$ as proporções da referência e $a_i$ as do ano comparado,
+\begin{equation}
+\mathrm{PSI} = \sum_{i=1}^{k} (a_i - r_i) \ln\frac{a_i}{r_i}.
+\end{equation}
+O cálculo foi feito para os 20 atributos mais importantes segundo os valores SHAP. Valores acima de 0,25 indicam mudança relevante de distribuição.
+
+\section{Scripts da Pipeline v4}
+\label{ap:scripts}
+
+A Tabela~\ref{tab:scripts} lista os scripts da pipeline v4, na pasta \texttt{scripts/} do repositório MODELO-PREVISAO. Os scripts 40 a 55 formam a pipeline principal, executada em sequência; os scripts 56 a 63 são análises complementares sobre os dados e os modelos gerados por ela.
+
+\begin{table}[htbp]
+\centering
+\caption{Scripts da pipeline v4 e respectivas funções}
+\label{tab:scripts}
+\footnotesize
+\begin{tabular}{|c|p{0.80\textwidth}|}
+\hline
+\textbf{Script} & \textbf{Função} \\ \hline
+40 & Agrega o SINAN (camada Gold) por mesorregião e semana epidemiológica, de 2000 a 2026. \\ \hline
+41 & Agrega o INMET (camada Silver) por mesorregião e semana epidemiológica e registra os anos sem dados. \\ \hline
+42 & Integra as séries do SINAN e do INMET e adiciona o indicador de presença de dado climático. \\ \hline
+43 & Gera as defasagens de 1 a 8 semanas e as médias móveis. \\ \hline
+44 & Gera as anomalias climáticas em relação à climatologia do período de treino. \\ \hline
+45 & Separa treino, validação e teste para as três janelas temporais (curta, longa e longa ponderada). \\ \hline
+46 & Treina os nove modelos de regressão (três janelas $\times$ três conjuntos de atributos) e calcula os intervalos de confiança por \textit{bootstrap}. \\ \hline
+47 & Executa a validação \textit{walk-forward}. \\ \hline
+48 & Calcula a importância dos atributos (ganho e valores SHAP). \\ \hline
+49 & Otimiza os hiperparâmetros com Optuna. \\ \hline
+50 & Calcula a estabilidade distribucional dos atributos (PSI e teste de Kolmogorov--Smirnov). \\ \hline
+51 & Gera a curva de aprendizado em função do tamanho da janela de treino. \\ \hline
+52 & Compila os resultados da pipeline em um relatório único. \\ \hline
+53 & Gera as tabelas e figuras usadas no texto. \\ \hline
+54 & Treina os classificadores do nível de risco. \\ \hline
+55 & Gera a página estática do painel com as previsões e os alertas. \\ \hline
+56 & Análises complementares: baselines ingênuos, métricas de momento, alertas, cenários de atraso na notificação e recorte do Distrito Federal. \\ \hline
+57 & Avalia os modelos salvos, sem retreino: baselines, métricas por ano, métricas de momento, recorte do Distrito Federal e série nacional. \\ \hline
+58 & Avalia o vazamento temporal dos atributos clínicos da semana~$t$ e treina o modelo realista. \\ \hline
+59 & Calcula os baselines avançados (climatologia e Ridge) e os controles de região e semana. \\ \hline
+60 & Calcula o MASE por mesorregião e os testes de Diebold--Mariano com \textit{bootstrap} em blocos. \\ \hline
+61 & Compara a classificação do nível de risco com os baselines e mede a antecedência da sinalização de subida. \\ \hline
+62 & Testa formalmente a contribuição do clima (Diebold--Mariano e \textit{bootstrap} em blocos). \\ \hline
+63 & Refaz os cenários de atraso na notificação com o conjunto de atributos realista. \\ \hline
+\end{tabular}
+\fonte{Repositório MODELO-PREVISAO~\cite{modeloprevisao2026}.}
+\end{table}
+
 \chapter{Comparação com a Pipeline Anterior às Correções (v3)}
 \label{ap:comparacao_v3}
 

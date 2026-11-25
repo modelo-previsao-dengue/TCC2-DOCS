@@ -1,7 +1,7 @@
 \chapter{Metodologia}
 \label{cap:metodologia}
 
-Este capítulo descreve o que foi realizado no TCC~2: as bases de dados utilizadas, o pipeline de processamento, as correções de qualidade identificadas durante a execução, a construção da série de modelagem e dos atributos, os modelos e os previsores de referência, e o protocolo de avaliação. Todo o código está versionado no repositório MODELO-PREVISAO \cite{modeloprevisao2026}, e a pipeline v4 de modelagem é executada sequencialmente pelos scripts~40 a 55 (\texttt{scripts/40\_aggregate\_sinan\_full.py} até \texttt{scripts/55\_build\_dashboard\_v4.py}), com a divisão temporal e os hiperparâmetros definidos em \texttt{config/recorte.json}.
+Este capítulo descreve o que foi realizado no TCC~2: as bases de dados utilizadas, o pipeline de processamento, as correções de qualidade identificadas durante a execução, a construção da série de modelagem e dos atributos, os modelos e os previsores de referência, e o protocolo de avaliação. Todo o código está versionado no repositório MODELO-PREVISAO \cite{modeloprevisao2026}, e a pipeline v4 de modelagem é executada sequencialmente por scripts versionados (Apêndice~\ref{ap:algoritmos}), com a divisão temporal e os hiperparâmetros definidos em \texttt{config/recorte.json}.
 
 \section{Visão Geral}
 
@@ -44,6 +44,7 @@ Os dados climáticos são os arquivos anuais do Banco de Dados Meteorológicos (
 A tabela oficial de municípios do IBGE forneceu os códigos, as coordenadas e a hierarquia município--mesorregião--UF \cite{ibge1990mesorregioes}. Cada estação do INMET foi associada ao município mais próximo, por distância geodésica (haversine), e, por meio dele, à sua mesorregião. As 700 estações cobriram as 137 mesorregiões, com entre 1 e 31 estações por mesorregião (mediana de 4).
 
 \section{Agregação Mesorregional e Integração}
+\label{sec:agregacao}
 
 \subsection{Escolha da Escala Espacial}
 
@@ -159,7 +160,6 @@ Os hiperparâmetros foram os mesmos nas nove combinações, de modo que as difer
 \texttt{tree\_method} & \texttt{hist} & Constrói as árvores a partir de histogramas dos atributos, o que acelera o treino na série longa (157 mil linhas). \\ \hline
 \end{tabular}
 \fonte{Adaptado de Chen e Guestrin~\cite{chen2016xgboost}.}
-\nota{Implementação em \texttt{scripts/46\_train\_regression\_v4.py}.}
 \end{table}
 
 A classificação de risco utilizou as mesmas configurações com a função objetivo multiclasse (\textit{softprob}) e pesos inversamente proporcionais à frequência de cada classe.
@@ -192,7 +192,7 @@ Como o objetivo principal é antecipar o momento dos surtos (Seção~\ref{sec:re
     \item \textbf{Acerto de direção:} a proporção de mesorregião-semanas em que o sinal da variação prevista entre $t$ e $t+4$ coincide com o da variação observada, considerando apenas as variações relevantes, com valor absoluto de ao menos cinco notificações e de 20\% da contagem da semana $t$. A referência é uma regra ingênua que prolonga a tendência da última semana.
 \end{itemize}
 
-Essas métricas foram calculadas com os modelos salvos pelo script de regressão, sem retreino, pelo script \texttt{57\_avaliacao\_modelos\_salvos\_v4.py}, que também calcula os baselines no teste da v4.
+Essas métricas foram calculadas com os modelos de regressão já treinados, sem retreino, na mesma etapa que calcula os baselines no teste da v4. As definições formais estão no Apêndice~\ref{ap:metricas}.
 
 \subsection{Validação Walk-Forward}
 
@@ -223,7 +223,7 @@ O Optuna \cite{optuna2019} foi utilizado para testar se a otimização dos hiper
 \subsection{Análise de Drift (PSI)}
 \label{sec:met_drift}
 
-Para quantificar a estabilidade da distribuição dos atributos entre o treino e cada ano de teste, foi calculado o \textit{Population Stability Index} (PSI) de cada atributo (Seção~\ref{sec:ref_drift}). Atributos com PSI acima de 0,25 foram sinalizados como instáveis.
+Para quantificar a estabilidade da distribuição dos atributos ao longo da série, foi calculado o \textit{Population Stability Index} (PSI) (Seção~\ref{sec:ref_drift}) das 20 variáveis mais importantes segundo os valores SHAP, tomando o período de teste como referência e comparando com ele cada ano do treino da variante~B. Atributos com PSI acima de 0,25 foram sinalizados como instáveis. O cálculo está detalhado no Apêndice~\ref{ap:metricas}.
 
 \subsection{Interpretação}
 

@@ -1,7 +1,7 @@
 \chapter{Sistema de Previsão e Alerta}
 \label{cap:sistema}
 
-Os resultados da pipeline mesorregional foram disponibilizados por meio de quatro componentes, descritos neste capítulo: um painel interativo em Streamlit, uma pipeline automatizada de atualização, a publicação dos dados em repositório aberto e notebooks reprodutíveis.
+Os resultados da pipeline mesorregional foram disponibilizados por meio de quatro componentes, descritos neste capítulo: um painel interativo em Streamlit, uma pipeline automatizada de atualização, a publicação dos dados em repositório aberto e notebooks reprodutíveis. A API REST desenvolvida com FastAPI~\cite{fastapi2024} na primeira etapa do trabalho serve apenas o modelo municipal anterior às correções de dados. Ela não foi adaptada ao modelo mesorregional e, por isso, não integra o sistema descrito neste capítulo.
 
 \section{Dashboard DengueCast v4}
 
@@ -15,7 +15,15 @@ O painel principal do projeto é uma aplicação Streamlit \cite{streamlit2024} 
     \item Explorar os dados brutos e as métricas do modelo.
 \end{itemize}
 
-O dashboard utiliza os modelos de regressão e classificação da v4 e os dados de teste para gerar previsões e alertas. Os dados são carregados a partir do repositório no HuggingFace.
+O dashboard utiliza os modelos da v4 e os dados versionados no repositório MODELO-PREVISAO \cite{modeloprevisao2026} para gerar previsões e alertas. A previsão do número de notificações em $t+4$ vem do modelo de regressão; a faixa de risco e a probabilidade de cada faixa vêm do classificador do nível de risco.
+
+\subsection{Diferença em relação aos alertas recomendados}
+
+O painel não reflete integralmente as conclusões do Capítulo~\ref{cap:resultados}. Ele exibe as faixas de risco do classificador, calculadas com os modelos de 266 atributos, enquanto a Seção~\ref{sec:res_classificacao} mostra que os alertas obtidos aplicando os limiares de risco à previsão da regressão realista superam tanto o classificador quanto a persistência. A substituição do classificador por esses alertas, com o conjunto realista de atributos, é indicada como trabalho futuro.
+
+\subsection{Escopo da verificação}
+
+O painel foi desenvolvido como meio de disponibilização dos resultados, e não como objeto de avaliação deste trabalho. Não foram avaliados a usabilidade junto a usuários, a utilidade dos alertas para as equipes de vigilância epidemiológica nem o desempenho da aplicação (tempo de resposta e comportamento sob carga).
 
 \section{Pipeline Automatizado}
 
@@ -23,7 +31,7 @@ A atualização dos dados é realizada por um workflow do GitHub Actions configu
 
 \begin{itemize}
     \item \textbf{Atualização semanal (cron):} às segundas-feiras às 03h (horário de Brasília), o workflow busca os dados mais recentes do SINAN e carrega os ZIPs brutos no HuggingFace, sem executar a pipeline de treino;
-    \item \textbf{Re-execução completa (manual):} via \texttt{workflow\_dispatch}, é possível disparar a execução da pipeline v4 completa (scripts~40-55), com criação de swap de 8~GB para caber no runner gratuito de 7~GB de RAM.
+    \item \textbf{Re-execução completa (manual):} via \texttt{workflow\_dispatch}, é possível disparar a execução da pipeline v4 completa (Apêndice~\ref{ap:scripts}), com criação de swap de 8~GB para caber no runner gratuito de 7~GB de RAM.
 \end{itemize}
 
 \section{Publicação de Dados}
@@ -39,22 +47,3 @@ Três notebooks públicos no Kaggle\footnote{Disponíveis em \url{https://www.ka
     \item \textbf{Treino:} reprodução do treino XGBoost com os mesmos hiperparâmetros de \texttt{config/recorte.json};
     \item \textbf{Resultados:} tabelas e figuras comparativas entre variantes e baselines.
 \end{enumerate}
-
-\section{API REST (Legado)}
-
-A API desenvolvida com FastAPI \cite{fastapi2024} serve o modelo municipal anterior às correções de dados. Os endpoints disponíveis estão na Tabela~\ref{tab:endpoints}. A adaptação da API para o modelo mesorregional, com entrada por código de mesorregião e alertas derivados da regressão, é indicada como trabalho futuro.
-
-\begin{table}[htb]
-\centering
-\caption{Endpoints da API de previsão (versão municipal, legado)}
-\label{tab:endpoints}
-\small
-\begin{tabular}{|p{0.30\textwidth}|p{0.62\textwidth}|}
-\hline
-\textbf{Endpoint} & \textbf{Descrição} \\ \hline
-\texttt{GET /health} & Estado do serviço e dos modelos carregados \\ \hline
-\texttt{GET /predict/\{municipio\}} & Previsão de notificações em $t+4$ e nível de risco para as semanas de um município (código IBGE) \\ \hline
-\texttt{GET /alerts} & Lista de municípios e semanas com nível de risco igual ou superior a um mínimo informado, ordenada pela previsão \\ \hline
-\texttt{GET /municipios} & Estatísticas agregadas por município, com filtro por UF \\ \hline
-\end{tabular}
-\end{table}
