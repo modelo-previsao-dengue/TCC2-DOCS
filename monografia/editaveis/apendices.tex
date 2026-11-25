@@ -27,7 +27,8 @@ Ganho do clima com atraso de 8 semanas ($\Delta R^2_{\log}$) & $-$0,0013 ($p=0{,
 Melhor variável climática no SHAP (posição) & pressão (12.ª) & temp. mínima (20.ª) \\ \hline
 Limiar climático de destaque & ``umidade'' 15,7 & temp. mínima 13,8~$^\circ$C \\ \hline
 \end{tabular}
-\fonte{Elaboração própria. Antes: relatórios do PR \#1 do repositório MODELO-PREVISAO; depois: pipeline reprocessada. Os rótulos A e C referem-se a conjuntos de atributos na v3.}
+\fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
+\nota{Antes: relatórios do PR \#1 do repositório MODELO-PREVISAO~\cite{modeloprevisao2026}; depois: pipeline reprocessada. Os rótulos A e C referem-se a conjuntos de atributos na v3.}
 \end{table}
 
 \section{Classificação do Nível de Risco (v3)}
@@ -50,7 +51,8 @@ XGBoost A (só SINAN) & 0,470 & 0,724 & 0,286 & 0,263 & 0,609 \\ \hline
 XGBoost B (+ INMET bruto) & 0,491 & 0,740 & 0,323 & 0,268 & 0,632 \\ \hline
 XGBoost C (+ INMET enriquecido) & 0,491 & 0,736 & 0,299 & 0,284 & 0,643 \\ \hline
 \end{tabular}
-\fonte{Elaboração própria. Os rótulos A, B e C referem-se a conjuntos de atributos na v3.}
+\fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
+\nota{Os rótulos A, B e C referem-se a conjuntos de atributos na v3.}
 \end{table}
 
 O experimento complementar chegou ao mesmo resultado com uma definição de surto diferente, binária e baseada no canal endêmico: o classificador dedicado obteve F1 de 0,72 a 0,74 para a classe surto, abaixo da persistência do rótulo (0,85). Aplicar o limiar do canal endêmico à previsão contínua da regressão, em vez de treinar um classificador, alcançou 0,83, próximo à persistência. Os dois resultados indicam que, para gerar alertas, é preferível derivá-los da previsão numérica, e não treinar um classificador separado.
@@ -61,10 +63,10 @@ A análise SHAP da variante com clima enriquecido na v3 (Figura~\ref{fig:shap_v3
 
 \begin{figure}[htb]
     \centering
-    \caption{Valores SHAP das 20 variáveis mais importantes do modelo C --- pipeline v3}
     \includegraphics[width=0.7\textwidth]{figuras/resultados/fig_v3_shap_beeswarm.png}
+    \caption{Valores SHAP das 20 variáveis mais importantes do modelo C --- pipeline v3}
     \label{fig:shap_v3}
-    \fonte{Elaboração própria.}
+    \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
 \end{figure}
 
 Os limiares estimados para as variáveis climáticas (Tabela~\ref{tab:limiares_v3}) são coerentes com a biologia do vetor. A contribuição da temperatura passa a ser positiva acima de 13,8~$^\circ$C de mínima e de 21,0~$^\circ$C de média semanal, valores próximos do limite inferior de transmissão descrito na literatura. A precipitação média na janela de 2 a 4 semanas e o número de dias de chuva nessa janela aumentam a previsão, o que corresponde ao intervalo de desenvolvimento do vetor. A pressão atmosférica tem efeito negativo, provavelmente como indicador indireto de altitude e de massas de ar mais secas e frias.
@@ -87,7 +89,8 @@ Dias de chuva, média de 2 a 4 semanas & 28 & 2,1 dias & aumenta \\ \hline
 Precipitação acumulada, média de 2 a 4 semanas & 29 & 16,1~mm & aumenta \\ \hline
 Temperatura mínima, média de 2 a 4 semanas & 30 & 15,3~$^\circ$C & aumenta \\ \hline
 \end{tabular}
-\fonte{Elaboração própria. Os rótulos referem-se à pipeline v3 (janela curta).}
+\fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
+\nota{Os rótulos referem-se à pipeline v3 (janela curta).}
 \end{table}
 
 \section{Simulação de Atraso na Notificação (v3)}
@@ -108,15 +111,16 @@ Atraso de 4 semanas & 0,868 & 0,873 & +0,005 & $<0{,}001$ \\ \hline
 Atraso de 8 semanas & 0,865 & 0,869 & +0,004 & $<0{,}001$ \\ \hline
 Só clima & $-$0,011 & 0,390 & +0,401 & $<0{,}001$ \\ \hline
 \end{tabular}
-\fonte{Elaboração própria. Pipeline v3 (janela curta, 2019--2022).}
+\fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
+\nota{Pipeline v3 (janela curta, 2019--2022).}
 \end{table}
 
 \begin{figure}[htb]
     \centering
-    \caption{$R^2_{\log}$ com e sem clima nos cenários de atraso na notificação --- pipeline v3}
     \includegraphics[width=0.9\textwidth]{figuras/resultados/fig_v3_blindness_comparison.png}
+    \caption{$R^2_{\log}$ com e sem clima nos cenários de atraso na notificação --- pipeline v3}
     \label{fig:blindness_v3}
-    \fonte{Elaboração própria.}
+    \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
 \end{figure}
 
 Esses resultados devem ser lidos com a limitação apontada na metodologia: os cenários de atraso removem as defasagens de notificações, mas mantêm as contagens agregadas da semana $t$, como casos confirmados ou prováveis, o que explica por que o desempenho quase não cai. Uma simulação mais realista do atraso tenderia a reduzir o desempenho sem clima e a aumentar o valor relativo das variáveis climáticas.

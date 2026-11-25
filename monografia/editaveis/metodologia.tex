@@ -24,7 +24,6 @@ Atributos & Defasagens, médias móveis e anomalias climáticas \\ \hline
 Divisão temporal & Treino, validação e teste por ano, com alvo em $t+4$ \\ \hline
 Modelagem e avaliação & Três variantes de XGBoost, baselines, \textit{data blindness}, classificação de risco, SHAP e \textit{walk-forward} \\ \hline
 \end{tabular}
-\fonte{Elaboração própria.}
 \end{table}
 
 \section{Bases de Dados}
@@ -78,7 +77,6 @@ Anos 2020 e 2022 ausentes & Arquivos do INMET fora do inventário por diferença
 Rótulo de risco com vazamento & Percentis de risco calculados sobre toda a série, incluindo o teste & Percentis calculados apenas no treino \\ \hline
 Climatologia das anomalias com vazamento & Média e desvio históricos calculados incluindo validação e teste & Climatologia apenas dos anos de treino \\ \hline
 \end{tabular}
-\fonte{Elaboração própria.}
 \end{table}
 
 O primeiro defeito tem consequência direta sobre a interpretação: em versões anteriores, a variável tratada como umidade relativa aparecia entre as climáticas mais associadas aos casos e produzia um limiar de ``15,7\% de umidade'', valor fisicamente implausível para médias semanais. Esse limiar era, na verdade, uma temperatura de ponto de orvalho em graus Celsius. Após a correção, a variável deixou de se destacar, como mostrado no Capítulo~\ref{cap:resultados}.
@@ -101,7 +99,7 @@ Série longa (B) & 2000 & 2001--2022 & 157.413 & 72,8\% \\ \hline
 Série longa ponderada (C) & 2000 & 2001--2022 & 157.413 & 72,8\% \\ \hline
 \multicolumn{5}{|l|}{\textit{Validação:} 2023 (7.261 linhas) \quad \textit{Teste:} 2024--2026 (16.029 linhas)} \\ \hline
 \end{tabular}
-\fonte{Elaboração própria.}
+\fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
 \end{table}
 
 A variante~A reproduz a divisão da v3 (4~anos de treino); a variante~B usa toda a série disponível (22~anos); a variante~C é idêntica à~B, mas aplica um peso amostral com decaimento exponencial ($\lambda=0{,}1$, referência 2022), de modo que anos recentes pesam mais no treino. As três variantes são combinadas com os mesmos três conjuntos de atributos descritos na Seção~\ref{sec:eng_atributos}, resultando em $3 \times 3 = 9$ combinações.
@@ -160,7 +158,8 @@ Os hiperparâmetros foram os mesmos nas nove combinações, de modo que as difer
 \texttt{early\_stopping\_rounds} & 50 & Interrompe o treino quando o erro na validação (2023) não melhora por 50 árvores consecutivas. \\ \hline
 \texttt{tree\_method} & \texttt{hist} & Constrói as árvores a partir de histogramas dos atributos, o que acelera o treino na série longa (157 mil linhas). \\ \hline
 \end{tabular}
-\fonte{Elaboração própria a partir de \citeonline{chen2016xgboost} e \texttt{scripts/46\_train\_regression\_v4.py}.}
+\fonte{Adaptado de Chen e Guestrin~\cite{chen2016xgboost}.}
+\nota{Implementação em \texttt{scripts/46\_train\_regression\_v4.py}.}
 \end{table}
 
 A classificação de risco utilizou as mesmas configurações com a função objetivo multiclasse (\textit{softprob}) e pesos inversamente proporcionais à frequência de cada classe.
