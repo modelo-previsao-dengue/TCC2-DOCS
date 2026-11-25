@@ -81,7 +81,7 @@ A desagregação por ano (Tabela~\ref{tab:por_ano}) mostra de onde vem a desvant
 2026 & + clima enriquecido & 0,737 & \textbf{0,571} & \textbf{62} & 0,22 / 0,22 \\ \hline
 \end{tabular}
 \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
-\nota{Previsto e real em milhões de notificações no ano; 2026 até a semana~12. Script~57.}
+\nota{Previsto e real em milhões de notificações no ano; 2026 até a semana~12.}
 \end{table}
 
 A Figura~\ref{fig:serie_nacional} mostra o comportamento na série nacional, somando as 137 mesorregiões. Em 2024, o modelo acompanha a subida e a queda da epidemia no tempo certo, e o seu máximo ocorre uma semana antes do máximo observado, mas satura em pouco mais da metade da altura do pico. A persistência atinge a altura correta, mas com quatro semanas de atraso, que é exatamente o horizonte de previsão. Em 2025, uma temporada menor e de pico mais achatado, o modelo segue a série observada de perto durante a subida e a descida.
@@ -118,12 +118,12 @@ XGBoost, série longa, só SINAN & 44,7\% & 3 & $-0{,}3$ \\ \hline
 XGBoost, série longa + clima enriq. & \textbf{48,0\%} & \textbf{3} & $\mathbf{-0{,}2}$ \\ \hline
 \end{tabular}
 \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
-\nota{Erro positivo indica pico previsto depois do observado; $n=179$ mesorregião-temporadas. Script~57.}
+\nota{Erro positivo indica pico previsto depois do observado; $n=179$ mesorregião-temporadas.}
 \end{table}
 
 O modelo também acerta o sentido da variação: entre as 10.367 mesorregião-semanas em que as notificações mudaram de forma relevante entre $t$ e $t+4$, a previsão indicou corretamente se elas iriam subir ou descer em 82\% dos casos, contra 56\% de uma regra ingênua que repete a tendência da última semana. A persistência, por construção, não indica direção alguma. O clima contribui nos dois indicadores: sem ele, o pico a até duas semanas cai de 48\% para 45\% e o acerto de direção, de 82\% para 80\%.
 
-Uma análise complementar (script~61) mediu a antecedência da sinalização de subida antes do pico em 384 mesorregião-temporadas do teste. O modelo sinaliza a subida com mediana de 6~semanas de antecipação (P25--P75: 4--10 semanas), enquanto o previsor de tendência observada (\texttt{notificacoes\_lag\_1w} crescente por 2+ semanas) obteve mediana de 7~semanas. A tendência observada detecta a subida antes do modelo, pois opera sobre dados já observados e não sobre uma previsão quatro semanas à frente; contudo, a tendência observada não está disponível no instante $t$ para a semana $t+4$, e o modelo é o único que produz uma estimativa antecipada. A definição de ``temporada com surto'' usada nesta análise condiciona no desfecho observado e é reportada como limitação.
+Uma análise complementar mediu a antecedência da sinalização de subida antes do pico em 384 mesorregião-temporadas do teste. O modelo sinaliza a subida com mediana de 6~semanas de antecipação (P25--P75: 4--10 semanas), enquanto o previsor de tendência observada (\texttt{notificacoes\_lag\_1w} crescente por 2+ semanas) obteve mediana de 7~semanas. A tendência observada detecta a subida antes do modelo, pois opera sobre dados já observados e não sobre uma previsão quatro semanas à frente; contudo, a tendência observada não está disponível no instante $t$ para a semana $t+4$, e o modelo é o único que produz uma estimativa antecipada. A definição de ``temporada com surto'' usada nesta análise condiciona no desfecho observado e é reportada como limitação.
 
 Esses resultados qualificam a comparação da Seção~\ref{sec:res_baselines}. A vantagem da persistência na escala original vem da magnitude, que ela reproduz com quatro semanas de atraso; quando a pergunta é \textit{quando} o surto vai acontecer, que é a informação que permite preparar serviços e intensificar o controle vetorial com antecedência, o XGBoost é claramente superior aos previsores ingênuos.
 
@@ -192,7 +192,6 @@ Série longa, só SINAN & 0,847 & 0,526 & 1.183 & 146 / 255 \\ \hline
 Série longa + clima enriq. & 0,856 & \textbf{0,694} & \textbf{975} & 201 / 255 \\ \hline
 \end{tabular}
 \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
-\nota{Script~57.}
 \end{table}
 
 Os totais do teste não coincidem com as cerca de 277 mil notificações de residentes do DF em 2024 porque o alvo de cada linha é a semana $t+4$: as quatro primeiras semanas de 2024 ficam fora do teste, e 2025 e 2026 tiveram poucos casos no DF.
@@ -319,7 +318,7 @@ Persistência $\rightarrow$ limiares & 0,650 & 0,674 \\ \hline
 Regressão realista $\rightarrow$ limiares & \textbf{0,722} & \textbf{0,734} \\ \hline
 \end{tabular}
 \fonte{Dados do SINAN (DATASUS) e do INMET, 2000--2026.}
-\nota{Os limiares são P50/P75/P90 de \texttt{notificacoes\_t4} por mesorregião no treino~B. Script~61.}
+\nota{Os limiares são P50/P75/P90 de \texttt{notificacoes\_t4} por mesorregião no treino~B.}
 \end{table}
 
 \begin{table}[htb]
