@@ -218,12 +218,12 @@ Para avaliar a estabilidade ao longo do tempo, as nove combinações foram retre
 Na prática, as notificações das semanas mais recentes chegam com atraso ao sistema de vigilância. Para medir o valor do clima nessa situação, foram definidos cenários de ``cegueira'' (\textit{data blindness}), em que atributos epidemiológicos recentes foram removidos do treino, da validação e do teste, e o modelo foi treinado com e sem as variáveis climáticas:
 
 \begin{itemize}
-    \item \textbf{Atraso de 4 semanas:} removidas as defasagens de 1 a 4 semanas, a diferença, a variação percentual e a média móvel de 2 a 4 semanas das notificações;
+    \item \textbf{Atraso de 4 semanas:} removidas a contagem de notificações da semana~$t$, as defasagens de 1 a 4 semanas, a diferença, a variação percentual e a média móvel de 2 a 4 semanas das notificações;
     \item \textbf{Atraso de 8 semanas:} além das anteriores, as defasagens de 5 a 8 semanas e a média de 4 a 8 semanas;
-    \item \textbf{Só clima:} removidos todos os 110 atributos epidemiológicos, inclusive a codificação da semana do ano, restando apenas os 156 atributos climáticos.
+    \item \textbf{Só clima:} removidos todos os atributos epidemiológicos, exceto a codificação cíclica da semana do ano, restando os 156 atributos climáticos e os 2 da semana; o cenário sem clima correspondente mantém apenas a codificação da semana.
 \end{itemize}
 
-Os cenários de atraso não removem as contagens agregadas da semana $t$ (por exemplo, casos confirmados ou prováveis), que também estariam sujeitas a atraso em uma aplicação real. Eles representam, portanto, uma simulação otimista da perda de informação. A contagem de notificações da própria semana $t$ não é incluída como atributo em nenhum cenário.
+Os cenários partem do modelo realista (Seção~\ref{sec:atributos}). Os demais atributos do SINAN da semana~$t$ disponíveis em tempo real, como os dados demográficos e os sintomas iniciais, foram mantidos, embora também estivessem sujeitos a atraso em uma aplicação real. Os cenários representam, portanto, uma simulação otimista da perda de informação.
 
 \subsection{Controles da Contribuição do Clima}
 \label{sec:met_controles}
