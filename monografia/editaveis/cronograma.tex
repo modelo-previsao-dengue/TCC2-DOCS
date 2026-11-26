@@ -1,7 +1,7 @@
 \chapter{Cronograma}
-\label{cap:cronograma}
+\label{ap:cronograma}
 
-Este capítulo registra a distribuição temporal das atividades desenvolvidas no TCC~1 e no TCC~2.
+Este apêndice registra a distribuição temporal das atividades desenvolvidas no TCC~1 e no TCC~2.
 
 \section{Cronograma do TCC 1}
 
@@ -9,35 +9,22 @@ O TCC~1, desenvolvido de setembro a dezembro de 2025, concentrou-se na fundament
 
 \begin{figure}[htb]
 	\centering
-	\caption{Cronograma executado no TCC 1 (setembro a dezembro de 2025)}
 	\includegraphics[width=\textwidth]{figuras/Cronograma_TCC1_2025-1.png}
+	\caption{Cronograma executado no TCC 1 (setembro a dezembro de 2025)}
 	\label{fig:cronograma_tcc1}
-	\fonte{Elaborado pelos autores.}
 \end{figure}
 
 \section{Cronograma Executado no TCC 2}
 
-O TCC~2 havia sido planejado para o período de janeiro a março de 2026, com foco na comparação de diversas famílias de modelos para o Distrito Federal. A ampliação do escopo para o território nacional e a auditoria de qualidade dos dados estenderam a execução até novembro de 2026. A Tabela~\ref{tab:cronograma_tcc2} resume as atividades efetivamente realizadas, com as datas registradas no histórico de versões dos repositórios do projeto.
+O TCC~2 havia sido planejado para o período de janeiro a março de 2026, com foco na comparação de diversas famílias de modelos para o Distrito Federal. A ampliação do escopo para o território nacional e a auditoria de qualidade dos dados estenderam a execução até o fim de 2026. A Figura~\ref{fig:cronograma_tcc2} apresenta as atividades realizadas até novembro, com as datas registradas no histórico de versões dos repositórios do projeto, e as previstas para dezembro.
 
-\begin{table}[htb]
-\centering
-\caption{Atividades executadas no TCC 2}
-\label{tab:cronograma_tcc2}
-\small
-\begin{tabular}{|p{0.18\textwidth}|p{0.74\textwidth}|}
-\hline
-\textbf{Período} & \textbf{Atividades} \\ \hline
-Mar. 2026 & Criação dos repositórios do TCC 2; notebooks de estudo de XGBoost e SARIMA \\ \hline
-Abr. 2026 & Seleção de atributos climáticos por clusterização; integração do SINAN no recorte do Distrito Federal \\ \hline
-Mai. 2026 & Pipeline nacional do SINAN (Bronze, Silver e Gold); pipeline do INMET e mapeamento estação--município; primeiros modelos XGBoost, SHAP e validação \textit{walk-forward} \\ \hline
-Jun. 2026 & Reorganização dos repositórios; notebooks de treino no Colab e no Kaggle \\ \hline
-Jul. 2026 & Modelo nacional em nível municipal, API REST e painel interativo \\ \hline
-Set. 2026 & Pipeline com recorte de cinco anos; auditoria e correção dos dados do INMET e do SINAN; retreino com baselines; pipeline mesorregional; reprocessamento sobre os dados corrigidos; redação da monografia \\ \hline
-Out. 2026 & Experimento v4: série longa (22 anos de treino), peso de recência, curva de aprendizado, análise de drift (PSI), busca de hiperparâmetros (Optuna), classificação de risco em quatro faixas \\ \hline
-Nov. 2026 & Dashboard v4 em Streamlit Cloud; publicação dos dados no HuggingFace e notebooks no Kaggle; automação semanal via GitHub Actions; correção completa do INMET (27 anos reprocessados) e re-execução da v4; revisão da monografia \\ \hline
-\end{tabular}
-\fonte{Elaborado pelos autores a partir do histórico dos repositórios.}
-\end{table}
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=\textwidth]{figuras/Cronograma_TCC2_2026.png}
+	\caption{Cronograma do TCC 2 (janeiro a dezembro de 2026)}
+	\label{fig:cronograma_tcc2}
+	\fonte{Histórico de versões dos repositórios do projeto.}
+\end{figure}
 
 \section{Considerações sobre o Planejamento}
 

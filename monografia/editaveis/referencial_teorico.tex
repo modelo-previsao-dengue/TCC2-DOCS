@@ -22,50 +22,50 @@ A existência de defasagens temporais (lags) entre variações climáticas e cas
 A Figura \ref{fig:dengue_clima_goiania} exemplifica essa complexa interação entre variáveis climáticas e incidência de dengue, apresentando dados da cidade de Goiânia que ilustram como picos de casos frequentemente coincidem com padrões sazonais específicos de temperatura e precipitação \cite{basedosdados2024dengue}, evidenciando a importância de considerar múltiplas variáveis climáticas simultaneamente em modelos preditivos.
 
 \begin{figure}[htb]
-    \caption{Relação entre variáveis climáticas e casos de dengue em Goiânia.}
     \centering
     \includegraphics[width=0.6\textwidth]{figuras/Dengue e Clima Goiania.png}
-    \fonte{\cite{basedosdados2024dengue}}
+    \caption{Relação entre variáveis climáticas e casos de dengue em Goiânia.}
     \label{fig:dengue_clima_goiania}
+    \fonte{\cite{basedosdados2024dengue}}
 \end{figure}
 
 \section{Abordagens de Modelagem para Previsão de Dengue}
 
 A modelagem preditiva aplicada a doenças infecciosas tem evoluído significativamente nas últimas décadas, incorporando técnicas cada vez mais sofisticadas de análise de séries temporais, aprendizado de máquina e deep learning. No contexto da dengue, diferentes abordagens têm sido propostas e avaliadas, cada uma com suas vantagens e limitações específicas. Os modelos estatísticos clássicos, como ARIMA (\textit{Autoregressive Integrated Moving Average}) e sua extensão sazonal SARIMA (\textit{Seasonal ARIMA}), são amplamente utilizados para previsão de séries temporais epidemiológicas por sua capacidade de capturar autocorrelação temporal, tendências e padrões sazonais nos dados. Um modelo SARIMA é especificado por sete parâmetros $(p, d, q) \times (P, D, Q)_s$, onde $p$ representa a ordem autoregressiva, $d$ o grau de diferenciação, $q$ a ordem de média móvel, $P$, $D$, $Q$ os componentes sazonais correspondentes, e $s$ o período sazonal (por exemplo, 52 para dados semanais). O modelo SARIMAX estende o SARIMA ao incorporar variáveis exógenas, como dados climáticos, permitindo quantificar explicitamente o efeito de covariáveis externas na série temporal de casos de dengue. Adicionalmente, o Prophet, desenvolvido pelo Facebook (Meta), representa uma abordagem moderna de modelagem aditiva que decompõe a série em tendência, sazonalidade e efeitos de feriados, sendo particularmente robusto a dados faltantes e outliers, características comuns em dados epidemiológicos.
 
-A Figura \ref{fig:schematic_sarima} apresenta a estrutura esquemática do modelo SARIMA, ilustrando seus componentes autoregressivos (AR), de diferenciação (I) e de média móvel (MA), tanto para a parte não-sazonal quanto para a parte sazonal, evidenciando como o modelo captura padrões temporais complexos através da combinação desses elementos.
-
-\begin{figure}[htb]
-    \caption{Estrutura esquemática do modelo SARIMA.}
-    \centering
-    \includegraphics[width=0.8\textwidth]{figuras/Schematic-SARIMA.png}
-    \fonte{\cite{gong2023sarima}}
-    \label{fig:schematic_sarima}
-\end{figure}
-
 \subsection{Modelos de Aprendizado de Máquina}
 
 Os métodos de aprendizado de máquina têm demonstrado capacidade superior em capturar relações complexas e não-lineares presentes em dados epidemiológicos e climáticos \cite{roster2022machine,mussumeci2020large}. Random Forest, um método de ensemble que constrói múltiplas árvores de decisão e agrega suas predições, tem se destacado em aplicações de previsão de dengue devido à sua capacidade de capturar relações não-lineares, robustez a outliers, fornecimento de medidas de importância de features e necessidade reduzida de tuning de hiperparâmetros \cite{roster2022machine}. Este método tem demonstrado desempenho particularmente bom em séries temporais de dengue, com estudos reportando erros médios absolutos consistentemente baixos em múltiplas cidades brasileiras \cite{roster2022machine,mussumeci2020large}. Roster et al. (2022) aplicaram Random Forest para previsão de dengue em múltiplas cidades brasileiras, demonstrando que o modelo captura efetivamente padrões sazonais e a influência de variáveis meteorológicas, com performance superior a modelos estatísticos tradicionais \cite{roster2022machine}.
 
 
-A Figura \ref{fig:schematic_random_forest} ilustra o funcionamento do algoritmo Random Forest, mostrando como múltiplas árvores de decisão são construídas a partir de amostras bootstrap dos dados originais e subconjuntos aleatórios de features, com a predição final obtida pela agregação (média ou votação) das predições individuais de cada árvore, reduzindo a variância e melhorando a generalização.
+No Random Forest, múltiplas árvores de decisão são construídas a partir de amostras \textit{bootstrap} dos dados originais e de subconjuntos aleatórios de atributos, e a predição final é obtida pela agregação (média ou votação) das predições individuais de cada árvore, o que reduz a variância e melhora a generalização.
+
+O \textit{eXtreme Gradient Boosting} (XGBoost), algoritmo adotado neste trabalho, constrói árvores de decisão de forma sequencial, cada uma corrigindo os erros das anteriores (Seção~\ref{sec:xgboost}). Na previsão de dengue em cidades brasileiras, não há um método uniformemente superior: Roster, Connaughton e Rodrigues~\cite{roster2022machine} obtiveram os menores erros com \textit{random forest}, à frente do \textit{gradient boosting} e de um previsor sazonal ingênuo, e o melhor modelo variou entre as cidades, enquanto Mussumeci e Coelho~\cite{mussumeci2020large}, com dados do Infodengue, obtiveram os menores erros com redes LSTM. Este trabalho adota o XGBoost por tratar valores ausentes nativamente e por controlar a complexidade do modelo por regularização (Seção~\ref{sec:xgboost}), características relevantes para uma série nacional com lacunas de cobertura climática. A Figura~\ref{fig:schematic_xgboost} ilustra a construção sequencial das árvores.
 
 \begin{figure}[htb]
-    \caption{Estrutura esquemática do modelo Random Forest.}
     \centering
-    \includegraphics[width=0.6\textwidth]{figuras/Schematic-Random Forest.png}
-    \fonte{\cite{researchgate_randomforest}}
-    \label{fig:schematic_random_forest}
-\end{figure}
-
-O \textit{eXtreme Gradient Boosting} (XGBoost), algoritmo adotado neste trabalho, constrói árvores de decisão de forma sequencial, cada uma corrigindo os erros das anteriores (Seção~\ref{sec:xgboost}). Estudos recentes mostram que XGBoost alcança desempenho superior a Random Forest e a modelos estatísticos clássicos em previsão de dengue, especialmente quando variáveis climáticas são incorporadas~\cite{roster2022machine,mussumeci2020large,ferdousi2021windowed}.
-
-\begin{figure}[htb]
-    \caption{Estrutura esquemática do modelo XGBoost.}
-    \centering
-    \includegraphics[width=0.6\textwidth]{figuras/Schematic-XGBoost.png}
-    \fonte{\cite{researchgate_xgboost}}
+    \begin{tikzpicture}[
+        >=Stealth,
+        caixa/.style={draw, rounded corners=2pt, align=center, text width=22mm, minimum height=13mm, font=\small},
+        rot/.style={font=\scriptsize, align=center}
+    ]
+        \node[caixa, text width=25mm] (dados) at (0,0) {Dados de treino\\$(\mathbf{x}_i, y_i)$};
+        \node[caixa] (t1) at (40mm,0) {Árvore 1\\$f_1(\mathbf{x})$};
+        \node[caixa] (t2) at (80mm,0) {Árvore 2\\$f_2(\mathbf{x})$};
+        \node[font=\large] (pts) at (106mm,0) {$\cdots$};
+        \node[caixa] (tk) at (130mm,0) {Árvore $K$\\$f_K(\mathbf{x})$};
+        \draw[->] (dados) -- (t1);
+        \draw[->] (t1) -- node[rot, above=1mm] {gradientes\\da perda} (t2);
+        \draw[->] (t2) -- (pts);
+        \draw[->] (pts) -- (tk);
+        \node[caixa, text width=104mm] (soma) at (85mm,-26mm) {Previsão final: soma das saídas das árvores\\[2pt] $\hat{y}_i = \sum_{k=1}^{K} f_k(\mathbf{x}_i)$};
+        \draw[->] (t1.south) -- (t1.south |- soma.north);
+        \draw[->] (t2.south) -- (t2.south |- soma.north);
+        \draw[->] (tk.south) -- (tk.south |- soma.north);
+    \end{tikzpicture}
+    \caption{Estrutura esquemática do XGBoost: cada árvore é ajustada aos gradientes da função de perda deixados pelas árvores anteriores, e a previsão é a soma das saídas}
     \label{fig:schematic_xgboost}
+    \fonte{Adaptado de Chen e Guestrin~\cite{chen2016xgboost}.}
 \end{figure}
 
 \newpage
@@ -79,7 +79,7 @@ A Tabela~\ref{tab:comparativo_detalhado_tecnologias} resume as características 
     \caption{Comparativo Detalhado das Tecnologias: SARIMA, Random Forest, XGBoost e LSTM}
     \label{tab:comparativo_detalhado_tecnologias}
     \setlength{\tabcolsep}{3pt} % Reduz espaçamento entre colunas
-    \begin{tabular}{|p{0.12\textwidth}|p{0.26\textwidth}|p{0.29\textwidth}|p{0.29\textwidth}|}
+    \begin{tabular}{|p{0.12\textwidth}|p{0.25\textwidth}|p{0.285\textwidth}|p{0.285\textwidth}|}
     \hline
     \textbf{Modelo} & \textbf{Descrição} & \textbf{Vantagem} & \textbf{Desvantagem} \\ \hline
     \textbf{SARIMA / SARIMAX} & Especificação $(p,d,q)\times(P,D,Q)_s$ com componentes sazonais e, no SARIMAX, termos exógenos $X_t$. & \begin{itemize}[leftmargin=*,noitemsep,topsep=0pt] \item Captura autocorrelação e sazonalidade explícitas. \item Permite variáveis exógenas (clima). \item Alta interpretabilidade. \end{itemize} & \begin{itemize}[leftmargin=*,noitemsep,topsep=0pt] \item Relações lineares; pode subestimar não-linearidades. \item Sensível a estacionariedade; tuning custoso. \end{itemize} \\ \hline
@@ -96,17 +96,16 @@ Os efeitos climáticos sobre a incidência não são imediatos: eles percorrem u
 
 \begin{figure}[!htb]
     \centering
-    \caption{Defasagens temporais entre variáveis climáticas e casos de dengue}
     \includegraphics[width=0.95\textwidth]{figuras/DiagramaReferialTeorico_DefasagensTemporais.png}
+    \caption{Defasagens temporais entre variáveis climáticas e casos de dengue}
     \label{fig:defasagens_temporais}
-    \fonte{Elaboração própria, 2025.}
 \end{figure}
 
 Apesar da evidência consolidada sobre a associação clima--dengue~\cite{the_occurrence_dengue_weather_brazil}, permanecem lacunas que este trabalho busca endereçar: a comparação dos modelos de aprendizado de máquina com previsores ingênuos avaliados nos mesmos dados, sem a qual o ganho do modelo não pode ser distinguido da simples autocorrelação da série; a avaliação em escala nacional, cobrindo a heterogeneidade regional em um único protocolo; a quantificação do ganho marginal do clima quando a própria série de casos já está disponível como preditor; e a atenção à qualidade dos dados públicos de entrada, cujos defeitos podem produzir associações espúrias.
 
 \section{Previsores de Referência (Baselines)}
 
-Em previsão de séries temporais, a qualidade de um modelo só pode ser julgada em relação a uma referência. \citeonline{hyndman2018forecasting} recomendam, como referências mínimas, os métodos ingênuos: a \textbf{persistência} (\textit{naive}), que repete o último valor observado; o \textbf{ingênuo sazonal}, que repete o valor do mesmo período no ciclo anterior; e a \textbf{média} de observações recentes. Esses métodos não têm parâmetros a ajustar e, justamente por isso, estabelecem o patamar que qualquer modelo mais complexo precisa superar para justificar seu custo.
+Em previsão de séries temporais, a qualidade de um modelo só pode ser julgada em relação a uma referência. Hyndman e Athanasopoulos~\cite{hyndman2018forecasting} recomendam, como referências mínimas, os métodos ingênuos: a \textbf{persistência} (\textit{naive}), que repete o último valor observado; o \textbf{ingênuo sazonal}, que repete o valor do mesmo período no ciclo anterior; e a \textbf{média} de observações recentes. Esses métodos não têm parâmetros a ajustar e, justamente por isso, estabelecem o patamar que qualquer modelo mais complexo precisa superar para justificar seu custo.
 
 Para a dengue, a persistência é um competidor particularmente forte. Como a transmissão se propaga de semana a semana, a contagem atual é o melhor resumo isolado da contagem próxima, e a série apresenta autocorrelação elevada. Um modelo que obtenha um coeficiente de determinação alto pode estar apenas reproduzindo essa autocorrelação; a comparação com a persistência é o que permite separar o que o modelo aprendeu do que a própria série já entregava.
 
@@ -115,14 +114,14 @@ Para a dengue, a persistência é um competidor particularmente forte. Como a tr
 
 Prever \textit{quando} uma epidemia de dengue vai começar e atingir o pico e prever \textit{quão grande} ela será são problemas de dificuldade diferente. O momento da temporada é regulado em grande parte pelo ciclo anual do clima, que se repete todos os anos e deixa sinais na própria série de casos, como o início da subida nas semanas anteriores. A magnitude, por outro lado, depende de fatores que raramente estão nos dados disponíveis para o modelo: a imunidade da população a cada sorotipo, a introdução ou a substituição do sorotipo circulante, a intensidade das ações de controle vetorial e mudanças na prática de notificação \cite{bhatt2013global,coelho2016assessing}. Esses fatores variam de um ano para outro sem um padrão regular, de modo que duas temporadas com clima e início semelhantes podem terminar com tamanhos muito diferentes.
 
-A literatura de previsão de dengue registra essa assimetria. Em um desafio aberto de previsão probabilística com dezesseis equipes, \citeonline{johansson2019open} observaram que as previsões feitas no início da temporada tiveram pouca capacidade preditiva e que o desempenho foi, em geral, mais baixo justamente nas temporadas de maior incidência, que são aquelas em que as previsões seriam mais úteis. \citeonline{reich2016challenges}, ao prever a dengue em tempo real nas 77 províncias da Tailândia, obtiveram desempenho heterogêneo entre províncias e previsões mais instáveis nos períodos de crescimento dos casos.
+A literatura de previsão de dengue registra essa assimetria. Em um desafio aberto de previsão probabilística com dezesseis equipes, Johansson et al.~\cite{johansson2019open} observaram que as previsões feitas no início da temporada tiveram pouca capacidade preditiva e que o desempenho foi, em geral, mais baixo justamente nas temporadas de maior incidência, que são aquelas em que as previsões seriam mais úteis. Reich et al.~\cite{reich2016challenges}, ao prever a dengue em tempo real nas 77 províncias da Tailândia, obtiveram desempenho heterogêneo entre províncias e previsões mais instáveis nos períodos de crescimento dos casos.
 
 A essas dificuldades epidemiológicas somam-se as propriedades do método descritas na Seção~\ref{sec:xgboost}: o treino em escala logarítmica e a incapacidade das árvores de extrapolar além da faixa vista no treino limitam a previsão de picos inéditos. Por esses motivos, este trabalho avalia o modelo principalmente pela capacidade de antecipar o momento dos surtos, e trata a previsão do número absoluto de notificações como um objetivo secundário, sempre comparado à persistência.
 
 \section{O Papel do Clima na Previsão de Curto Prazo}
 \label{sec:ref_clima_curto_prazo}
 
-A associação entre clima e dengue descrita na Seção~\ref{sec:defasagens} não implica que as variáveis climáticas melhorem muito uma previsão de poucas semanas. O efeito do clima sobre os casos passa pelo ciclo do vetor e leva semanas para aparecer; quando a previsão é feita com quatro semanas de antecedência, as notificações recentes já carregam o efeito do clima das semanas anteriores, e a autocorrelação da série tende a dominar. Ao comparar modelos autorregressivos sazonais com e sem variáveis climáticas para a dengue no México, \citeonline{johansson2016evaluating} concluíram que o clima não melhorou de forma significativa a capacidade preditiva, e que a autocorrelação de curto prazo era o fator decisivo para as previsões de curto horizonte, enquanto a autocorrelação sazonal importava para os horizontes mais longos.
+A associação entre clima e dengue descrita na Seção~\ref{sec:defasagens} não implica que as variáveis climáticas melhorem muito uma previsão de poucas semanas. O efeito do clima sobre os casos passa pelo ciclo do vetor e leva semanas para aparecer; quando a previsão é feita com quatro semanas de antecedência, as notificações recentes já carregam o efeito do clima das semanas anteriores, e a autocorrelação da série tende a dominar. Ao comparar modelos autorregressivos sazonais com e sem variáveis climáticas para a dengue no México, Johansson et al.~\cite{johansson2016evaluating} concluíram que o clima não melhorou de forma significativa a capacidade preditiva, e que a autocorrelação de curto prazo era o fator decisivo para as previsões de curto horizonte, enquanto a autocorrelação sazonal importava para os horizontes mais longos.
 
 O valor do clima aparece quando a informação epidemiológica recente falta ou chega atrasada, ou quando o horizonte de previsão é longo. Os atrasos na consolidação das notificações estão entre os principais obstáculos à previsão em tempo real \cite{reich2016challenges}, e os dados meteorológicos, ao contrário, são medidos de forma automática e ficam disponíveis quase imediatamente. Um protótipo de sistema de alerta precoce desenvolvido para o Brasil, que utilizava previsões climáticas sazonais para estimar o risco de dengue com três meses de antecedência, detectou mais eventos de alto risco que um modelo nulo baseado em médias sazonais \cite{lowe2016evaluating}. Neste trabalho, essa função de \textit{alternativa} aos dados do SINAN é avaliada pelos cenários de atraso na notificação descritos no Capítulo~\ref{cap:metodologia}, nos quais as notificações recentes são removidas e o modelo passa a depender das variáveis climáticas.
 
@@ -158,8 +157,9 @@ Para a classificação do nível de risco, foram utilizados o F1 por classe, o F
 Os valores SHAP (\textit{SHapley Additive exPlanations}) \cite{lundberg2017unified} decompõem cada previsão em contribuições aditivas das variáveis de entrada, com base nos valores de Shapley da teoria dos jogos cooperativos. Para modelos de árvores, o algoritmo TreeExplainer calcula esses valores de forma exata e eficiente \cite{lundberg2020local}. A média do valor absoluto das contribuições ordena as variáveis por importância global, e a relação entre o valor de uma variável e a sua contribuição permite identificar limiares a partir dos quais a variável passa a aumentar ou a reduzir a previsão.
 
 \section{Definição de Surto e Canal Endêmico}
+\label{sec:ref_canal_endemico}
 
-A vigilância epidemiológica tradicionalmente define surto a partir do canal endêmico: para cada semana epidemiológica, calcula-se a média (ou mediana) e a dispersão das contagens em anos anteriores, e considera-se epidêmica a semana cuja contagem excede o limite superior do canal \cite{bortman1999canal}. A escolha da definição tem grande efeito sobre a proporção de semanas classificadas como surto: \citeonline{brady2015outbreak} mostraram que as definições usadas na prática variam de forma incompatível com a heterogeneidade real da transmissão. Por isso, alertas derivados de modelos devem explicitar a definição de surto adotada e, sempre que possível, ser comparados com a regra trivial de repetir o estado atual.
+A vigilância epidemiológica tradicionalmente define surto a partir do canal endêmico: para cada semana epidemiológica, calcula-se a média (ou mediana) e a dispersão das contagens em anos anteriores, e considera-se epidêmica a semana cuja contagem excede o limite superior do canal \cite{bortman1999canal}. A escolha da definição tem grande efeito sobre a proporção de semanas classificadas como surto: Brady et al.~\cite{brady2015outbreak} mostraram que as definições usadas na prática variam de forma incompatível com a heterogeneidade real da transmissão. Por isso, alertas derivados de modelos devem explicitar a definição de surto adotada e, sempre que possível, ser comparados com a regra trivial de repetir o estado atual.
 
 \section{Arquitetura de Dados e Ferramentas}
 
